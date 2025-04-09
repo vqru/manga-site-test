@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Manga Details</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back-button">← Back to Search</a>
+    <div id="manga-details"></div>
+  </div>
+
+  <script>
+    async function loadMangaDetails() {
+      const mangaId = new URLSearchParams(window.location.search).get('id');
+      const response = await fetch(`/.netlify/functions/fetchMangaDetails?id=${mangaId}`);
+      const { data } = await response.json();
+
+      const detailsDiv = document.getElementById("manga-details");
+      const title = data.attributes.title.en;
+      const description = data.attributes.description.en || "No description available";
+      const coverId = data.relationships.find(r => r.type === "cover_art")?.attributes?.fileName;
+      const coverUrl = coverId ? `https://uploads.mangadex.org/covers/${data.id}/${coverId}.512.jpg` : 'no-cover.jpg';
+
+      detailsDiv.innerHTML = `
+        <div class="manga-detail">
+          <img src="${coverUrl}" alt="${title}" class="detail-cover">
+          <div class="detail-text">
+            <h1>${title}</h1>
+            <p>${description}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Load details when page opens
+    loadMangaDetails();
+  </script>
+</body>
+</html>
