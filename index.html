@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Manga Test</title>
+  <title>Manga Search</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    #results { margin-top: 20px; }
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    input { padding: 8px; width: 70%; }
+    button { padding: 8px 15px; background: #0066ff; color: white; border: none; cursor: pointer; }
+    #results div { margin: 10px 0; padding: 10px; border: 1px solid #ddd; transition: background 0.2s; }
+    #results div:hover { background: #f0f0f0; }
   </style>
 </head>
 <body>
@@ -16,13 +19,14 @@
   <script>
     async function fetchManga() {
       const query = document.getElementById("search").value;
-      const response = await fetch(`/.netlify/functions/fetchManga?query=${query}`);
+      const response = await fetch("/.netlify/functions/fetchManga?query=" + query);
       const data = await response.json();
       
       const resultsDiv = document.getElementById("results");
       resultsDiv.innerHTML = data.data.map(manga => `
-        <div>
-          <h3>${manga.attributes.title.en || "No title"}</h3>
+        <div onclick="window.open('https://mangadex.org/title/${manga.id}', '_blank')" 
+             style="cursor: pointer;">
+          <h3>${manga.attributes.title.en || "Untitled"}</h3>
           <p>ID: ${manga.id}</p>
         </div>
       `).join("");
