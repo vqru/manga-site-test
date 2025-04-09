@@ -1,7 +1,7 @@
-// Searches manga by title
+// Gets full manga details by ID
 exports.handler = async (event) => {
-  const query = event.queryStringParameters.query || "";
-  const apiUrl = `https://api.mangadex.org/manga?title=${query}&limit=10&includes[]=cover_art`;
+  const id = event.queryStringParameters.id;
+  const apiUrl = `https://api.mangadex.org/manga/${id}?includes[]=artist&includes[]=author&includes[]=cover_art`;
 
   try {
     const response = await fetch(apiUrl);
