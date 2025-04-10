@@ -141,3 +141,18 @@ header {
   margin-bottom: 20px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
+.loading, .no-results, .error-state {
+  padding: 2rem;
+  text-align: center;
+}
+
+.error-state {
+  background: #ffebee;
+  border-radius: 8px;
+}
+
+.no-chapters {
+  padding: 1.5rem;
+  background: #fff3e0;
+  border-radius: 8px;
+}
