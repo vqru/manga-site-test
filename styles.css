@@ -156,3 +156,28 @@ header {
   background: #fff3e0;
   border-radius: 8px;
 }
+/* Chapter list improvements */
+.volume-section {
+  margin-bottom: 30px;
+}
+
+.chapter-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.read-external {
+  background: #FF7F00;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.read-external:hover {
+  background: #e67300;
+}
