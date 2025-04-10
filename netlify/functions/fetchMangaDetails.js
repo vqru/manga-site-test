@@ -1,19 +1,28 @@
-// Gets full manga details by ID
+const axios = require('axios');
+
 exports.handler = async (event) => {
   const id = event.queryStringParameters.id;
-  const apiUrl = `https://api.mangadex.org/manga/${id}?includes[]=artist&includes[]=author&includes[]=cover_art`;
+  const mangaUrl = `https://api.mangadex.org/manga/${id}?includes[]=cover_art`;
+  const chaptersUrl = `https://api.mangadex.org/manga/${id}/feed?order[chapter]=asc&limit=100`;
 
   try {
-    const response = await fetch(apiUrl);
-    const data = await response.json();
-    return { 
-      statusCode: 200, 
-      body: JSON.stringify(data) 
+    const [mangaRes, chaptersRes] = await Promise.all([
+      axios.get(mangaUrl),
+      axios.get(chaptersUrl)
+    ]);
+
+    return {
+      statusCode: 200,
+      headers: { "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify({
+        manga: mangaRes.data,
+        chapters: chaptersRes.data
+      }),
     };
   } catch (error) {
-    return { 
-      statusCode: 500, 
-      body: JSON.stringify({ error: "API failed" }) 
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "API failed" }),
     };
   }
 };
