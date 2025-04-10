@@ -165,20 +165,15 @@ function renderMangaDetails(manga) {
   `;
 }
 
-function renderChapterList(chapters) {
+// [Previous code remains the same until renderChapterList function]
+
+function renderChapterList(chapters, mangaId) {
   if (!chapters || chapters.length === 0) {
-    elements.chaptersList.innerHTML = '<p class="no-chapters">No chapters available for this manga.</p>';
+    elements.chaptersList.innerHTML = '<p class="no-chapters">No English chapters available</p>';
     return;
   }
 
-  // Group by volume
-  function renderChapterList(chapters) {
-  if (!chapters || chapters.length === 0) {
-    elements.chaptersList.innerHTML = '<p>No English chapters available</p>';
-    return;
-  }
-
-  // Group chapters by volume (including 'No Volume')
+  // Group chapters by volume
   const volumes = {};
   chapters.forEach(chapter => {
     const vol = chapter.attributes.volume || 'No Volume';
@@ -186,33 +181,47 @@ function renderChapterList(chapters) {
     volumes[vol].push(chapter);
   });
 
-  // Sort volumes - 'No Volume' first if it has latest chapters
+  // Sort volumes - No Volume first, then newest volumes
   const sortedVolumes = Object.keys(volumes).sort((a, b) => {
     if (a === 'No Volume') return -1;
     if (b === 'No Volume') return 1;
-    return b - a; // Latest volumes first
+    return b - a; // Newest volumes first
   });
 
   elements.chaptersList.innerHTML = sortedVolumes.map(vol => `
     <div class="volume-section">
       <h2>${vol === 'No Volume' ? 'Latest Chapters' : `Volume ${vol}`}</h2>
       <div class="chapter-list">
-        ${volumes[vol].map(chapter => `
-          <div class="chapter-item" data-id="${chapter.id}">
-            <div>
-              <h3>${chapter.attributes.chapter ? `Chapter ${chapter.attributes.chapter}` : 'Oneshot'}</h3>
-              ${chapter.attributes.title ? `<p>${chapter.attributes.title}</p>` : ''}
+        ${volumes[vol].map(chapter => {
+          const chapterNum = chapter.attributes.chapter ? `Ch. ${chapter.attributes.chapter}` : 'Oneshot';
+          const title = chapter.attributes.title ? `<p>${chapter.attributes.title}</p>` : '';
+          
+          return `
+            <div class="chapter-item">
+              <div class="chapter-info">
+                <h3>${chapterNum}</h3>
+                ${title}
+              </div>
+              <div class="chapter-actions">
+                <button onclick="window.location.href='reader.html?id=${chapter.id}'" 
+                  class="read-btn">
+                  Read
+                </button>
+                <a href="https://mangadex.org/chapter/${chapter.id}" 
+                  target="_blank" 
+                  class="md-link">
+                  MD
+                </a>
+              </div>
             </div>
-            <a href="https://mangadex.org/chapter/${chapter.id}" target="_blank" class="read-external">
-              Read on MangaDex
-            </a>
-          </div>
-        `).join('')}
+          `;
+        }).join('')}
       </div>
     </div>
   `).join('');
 }
 
+// [Rest of the previous code remains the same]
   // Add click events
   document.querySelectorAll('.chapter-item').forEach(item => {
     const readBtn = item.querySelector('.read-btn');
