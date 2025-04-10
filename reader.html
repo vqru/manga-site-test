@@ -3,72 +3,20 @@
 <head>
   <title>Chapter Reader</title>
   <link rel="stylesheet" href="styles.css">
-  <style>
-    .reader-container { max-width: 800px; margin: 0 auto; padding: 20px; }
-    .chapter-image { width: 100%; margin: 10px 0; }
-    .nav-buttons { display: flex; gap: 10px; justify-content: center; margin: 20px 0; }
-    .md-fallback { text-align: center; margin-top: 20px; }
-  </style>
 </head>
 <body>
-  <div class="reader-container">
-    <a href="#" onclick="window.history.back()" class="back-btn">← Back</a>
-    <div id="images-container"></div>
-    <div class="nav-buttons">
-      <button onclick="changePage(-1)">Previous</button>
-      <span id="page-number">Page 1</span>
-      <button onclick="changePage(1)">Next</button>
+  <div class="container">
+    <a href="#" id="back-btn" class="back-btn">← Back to Manga</a>
+    <div id="chapter-pages"></div>
+    <div class="page-nav">
+      <button id="prev-page">Previous</button>
+      <span id="page-indicator">Page 1</span>
+      <button id="next-page">Next</button>
     </div>
     <div class="md-fallback">
       <a id="md-link" target="_blank">Read on MangaDex</a>
     </div>
   </div>
-
-  <script>
-    let currentPage = 1;
-    let totalPages = 1;
-    let pagesData = null;
-
-    async function loadChapter() {
-      const chapterId = new URLSearchParams(window.location.search).get('id');
-      document.getElementById('md-link').href = `https://mangadex.org/chapter/${chapterId}`;
-      
-      try {
-        const response = await fetch(`/.netlify/functions/fetchChapterPages?id=${chapterId}`);
-        const data = await response.json();
-        
-        if (data.baseUrl && data.pages) {
-          pagesData = data;
-          totalPages = data.pages.length;
-          renderPage();
-        }
-      } catch (error) {
-        console.error('Failed to load:', error);
-      }
-    }
-
-    function renderPage() {
-      const container = document.getElementById('images-container');
-      container.innerHTML = pagesData.pages.map(page => `
-        <img 
-          src="${pagesData.baseUrl}/data/${page}" 
-          class="chapter-image" 
-          loading="lazy"
-          onerror="this.src='https://placehold.co/600x800?text=Image+Failed+to+Load'"
-        >
-      `).join('');
-      
-      document.getElementById('page-number').textContent = `Page ${currentPage} of ${totalPages}`;
-      window.scrollTo(0, 0);
-    }
-
-    function changePage(offset) {
-      currentPage = Math.max(1, Math.min(totalPages, currentPage + offset));
-      renderPage();
-    }
-
-    // Initialize
-    loadChapter();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
