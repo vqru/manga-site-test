@@ -2,9 +2,8 @@ const axios = require('axios');
 
 exports.handler = async (event) => {
   const { id } = event.queryStringParameters;
-  const mangaUrl = `https://api.mangadex.org/manga/${id}?includes[]=cover_art`;
-  // Get LATEST English chapters first, including unvolumed chapters
-  const chaptersUrl = `https://api.mangadex.org/manga/${id}/feed?limit=100&order[updatedAt]=desc&translatedLanguage[]=en`;
+  const mangaUrl = `https://api.mangadex.org/manga/${id}?includes[]=cover_art&includes[]=author&includes[]=artist`;
+  const chaptersUrl = `https://api.mangadex.org/manga/${id}/feed?limit=100&order[updatedAt]=desc&translatedLanguage[]=en&includes[]=scanlation_group`;
 
   try {
     const [mangaRes, chaptersRes] = await Promise.all([
