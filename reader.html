@@ -1,28 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chapter Reader</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    .reader-container { text-align: center; padding: 20px; }
+    .chapter-image { max-width: 100%; margin-bottom: 20px; }
+    .page-nav { margin: 20px 0; }
+  </style>
 </head>
 <body>
-  <header>
-    <div class="container">
-      <a href="#" id="back-btn">← Back to Manga</a>
-      <h1 id="chapter-title"></h1>
+  <div class="container">
+    <a href="#" id="back-btn">← Back to Manga</a>
+    <div class="reader-container">
+      <div id="chapter-pages"></div>
+      <div class="page-nav">
+        <button id="prev-page">Previous</button>
+        <span id="page-indicator">Page 1</span>
+        <button id="next-page">Next</button>
+      </div>
+      <p>Or read on <a id="mangadex-link" target="_blank">MangaDex.org</a></p>
     </div>
-  </header>
-
-  <main class="reader-container">
-    <div id="page-controls">
-      <button id="prev-page">Previous</button>
-      <span id="page-indicator">Page 1 of 10</span>
-      <button id="next-page">Next</button>
-    </div>
-    <div id="chapter-pages"></div>
-  </main>
-
-  <script src="script.js"></script>
+  </div>
+  <script>
+    // Minimal reader logic
+    const chapterId = new URLSearchParams(window.location.search).get('id');
+    document.getElementById('mangadex-link').href = `https://mangadex.org/chapter/${chapterId}`;
+    
+    document.getElementById('back-btn').addEventListener('click', () => {
+      window.history.back();
+    });
+  </script>
 </body>
 </html>
