@@ -70,14 +70,15 @@ async function searchManga(query = null) {
 function renderMangaList(mangaData) {
   elements.mangaList.innerHTML = mangaData.map(manga => {
     const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0] || 'Untitled';
-    // Replace existing cover URL logic with:
-const coverArt = manga.relationships.find(r => r.type === 'cover_art');
-const coverUrl = coverArt 
-  ? `https://uploads.mangadex.org/covers/${manga.id}/${coverArt.attributes.fileName}.256.jpg`
-  : 'https://placehold.co/200x300?text=No+Cover'; // Add fallback
+    const coverArt = manga.relationships.find(r => r.type === 'cover_art');
+    const coverUrl = coverArt 
+      ? `https://uploads.mangadex.org/covers/${manga.id}/${coverArt.attributes.fileName}.256.jpg`
+      : 'https://placehold.co/200x300?text=No+Cover';
+
     return `
       <div class="manga-card" data-id="${manga.id}">
-        <img src="${coverUrl}" alt="${title}" class="manga-cover" onerror="this.src='https://via.placeholder.com/180x250/cccccc/969696?text=Cover+Error'">
+        <img src="${coverUrl}" alt="${title}" class="manga-cover" 
+             onerror="this.onerror=null;this.src='https://placehold.co/200x300?text=Cover+Error'">
         <div class="manga-info">
           <h3>${title}</h3>
         </div>
@@ -97,7 +98,7 @@ function showNoResults() {
   elements.mangaList.innerHTML = `
     <div class="no-results">
       <p>No manga found for your search.</p>
-      <button onclick="searchManga('popular')">Show Popular Titles</button>
+      <button onclick="searchManga('popular')" class="read-btn">Show Popular Titles</button>
     </div>
   `;
 }
@@ -110,7 +111,7 @@ function showErrorState() {
         <li>MangaDex API might be down</li>
         <li>Your network connection</li>
       </ul>
-      <button onclick="searchManga('popular')">Try Loading Popular Titles</button>
+      <button onclick="searchManga('popular')" class="read-btn">Try Loading Popular Titles</button>
     </div>
   `;
 }
@@ -130,7 +131,7 @@ async function loadMangaDetails() {
     const { manga, chapters } = await response.json();
     
     renderMangaDetails(manga);
-    renderChapterList(chapters);
+    renderChapterList(chapters, mangaId);
     
   } catch (error) {
     console.error('Details load error:', error);
@@ -149,27 +150,27 @@ function renderMangaDetails(manga) {
   const author = manga.relationships.find(r => r.type === 'author');
   const authorName = author?.attributes?.name || 'Unknown author';
   const coverArt = manga.relationships.find(r => r.type === 'cover_art');
-  const coverUrl = coverArt ? 
-    `https://uploads.mangadex.org/covers/${manga.id}/${coverArt.attributes.fileName}.512.jpg` : 
-    'https://via.placeholder.com/300x450/cccccc/969696?text=No+Cover';
+  const coverUrl = coverArt 
+    ? `https://uploads.mangadex.org/covers/${manga.id}/${coverArt.attributes.fileName}.512.jpg` 
+    : 'https://placehold.co/300x450?text=No+Cover';
 
   elements.mangaDetails.innerHTML = `
     <div class="manga-header">
-      <img src="${coverUrl}" alt="${title}" class="manga-cover-large" onerror="this.src='https://via.placeholder.com/300x450/cccccc/969696?text=Cover+Error'">
+      <img src="${coverUrl}" alt="${title}" class="manga-cover-large" 
+           onerror="this.onerror=null;this.src='https://placehold.co/300x450?text=Cover+Error'">
       <div class="manga-meta">
         <h1>${title}</h1>
         <p class="author">By ${authorName}</p>
         <div class="description">${description}</div>
       </div>
     </div>
+    <div id="chapters-list"></div>
   `;
 }
 
-// [Previous code remains the same until renderChapterList function]
-
 function renderChapterList(chapters, mangaId) {
   if (!chapters || chapters.length === 0) {
-    elements.chaptersList.innerHTML = '<p class="no-chapters">No English chapters available</p>';
+    elements.chaptersList.innerHTML = '<p class="no-chapters">No English chapters available for this manga.</p>';
     return;
   }
 
@@ -185,7 +186,7 @@ function renderChapterList(chapters, mangaId) {
   const sortedVolumes = Object.keys(volumes).sort((a, b) => {
     if (a === 'No Volume') return -1;
     if (b === 'No Volume') return 1;
-    return b - a; // Newest volumes first
+    return parseFloat(b) - parseFloat(a); // Newest volumes first
   });
 
   elements.chaptersList.innerHTML = sortedVolumes.map(vol => `
@@ -193,6 +194,8 @@ function renderChapterList(chapters, mangaId) {
       <h2>${vol === 'No Volume' ? 'Latest Chapters' : `Volume ${vol}`}</h2>
       <div class="chapter-list">
         ${volumes[vol].map(chapter => {
+          const scanGroup = chapter.relationships.find(r => r.type === 'scanlation_group');
+          const groupName = scanGroup?.attributes?.name || 'Unknown group';
           const chapterNum = chapter.attributes.chapter ? `Ch. ${chapter.attributes.chapter}` : 'Oneshot';
           const title = chapter.attributes.title ? `<p>${chapter.attributes.title}</p>` : '';
           
@@ -201,6 +204,7 @@ function renderChapterList(chapters, mangaId) {
               <div class="chapter-info">
                 <h3>${chapterNum}</h3>
                 ${title}
+                <p class="group-name">${groupName}</p>
               </div>
               <div class="chapter-actions">
                 <button onclick="window.location.href='reader.html?id=${chapter.id}'" 
@@ -221,21 +225,6 @@ function renderChapterList(chapters, mangaId) {
   `).join('');
 }
 
-// [Rest of the previous code remains the same]
-  // Add click events
-  document.querySelectorAll('.chapter-item').forEach(item => {
-    const readBtn = item.querySelector('.read-btn');
-    readBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      window.location.href = `reader.html?id=${item.dataset.id}`;
-    });
-    
-    item.addEventListener('click', () => {
-      window.location.href = `reader.html?id=${item.dataset.id}`;
-    });
-  });
-}
-
 // ====================
 // CHAPTER READER PAGE
 // ====================
@@ -248,83 +237,79 @@ async function loadChapterReader() {
     elements.chapterPages.innerHTML = '<div class="loading">Loading chapter...</div>';
     
     // Get chapter data
-    const [chapterRes, pagesRes] = await Promise.all([
-      fetch(`/.netlify/functions/fetchChapterData?id=${chapterId}`),
-      fetch(`/.netlify/functions/fetchChapterPages?id=${chapterId}`)
-    ]);
+    const response = await fetch(`/.netlify/functions/fetchChapterPages?id=${chapterId}`);
+    const data = await response.json();
     
-    const chapterData = await chapterRes.json();
-    const { chapter, baseUrl, pages } = await pagesRes.json();
+    if (data.error) throw new Error(data.error);
     
-    // Set manga ID for back button
-    currentMangaId = chapterData.relationships.find(r => r.type === 'manga').id;
+    if (data.baseUrl && data.pages) {
+      // Successfully got chapter pages
+      currentMangaId = data.mangaId;
+      setupChapterReader(data.baseUrl, data.pages, chapterId);
+    } else if (data.externalUrl) {
+      // Fallback to MangaDex
+      showMangaDexFallback(data.externalUrl);
+    } else {
+      throw new Error('No chapter data available');
+    }
     
-    renderChapterInfo(chapterData, chapter);
-    setupChapterReader(baseUrl, pages);
-    
-  } // Replace catch block with:
-catch (error) {
-  console.error('Chapter load error:', error);
-  elements.chapterPages.innerHTML = `
-    <div class="error">
-      Failed to load chapter. Possible reasons:<br>
-      1. Chapter not available in English<br>
-      2. MangaDex API limit reached<br>
-      <a href="details.html?id=${currentMangaId}">Back to Manga</a>
-    </div>
-  `;
-    
-    document.getElementById('back-to-manga').addEventListener('click', () => {
-      window.location.href = `details.html?id=${currentMangaId}`;
-    });
+  } catch (error) {
+    console.error('Chapter load error:', error);
+    showChapterError(error.message);
   }
 }
 
-function renderChapterInfo(chapterData, chapter) {
-  const chapterNum = chapterData.attributes.chapter ? `Chapter ${chapterData.attributes.chapter}` : 'Oneshot';
-  const chapterTitle = chapterData.attributes.title ? `: ${chapterData.attributes.title}` : '';
-  
-  document.getElementById('chapter-title').textContent = `${chapterNum}${chapterTitle}`;
-  
-  // Set back button URL
-  if (elements.backBtn) {
-    elements.backBtn.href = `details.html?id=${currentMangaId}`;
-  }
-}
-
-function setupChapterReader(baseUrl, pages) {
+function setupChapterReader(baseUrl, pages, chapterId) {
   totalPages = pages.length;
   currentPage = 1;
   
-  updatePageControls();
+  // Render first page
   renderCurrentPage(baseUrl, pages);
+  updatePageControls();
   
-  // Navigation events
+  // Set up navigation
   if (elements.prevPageBtn && elements.nextPageBtn) {
-    elements.prevPageBtn.addEventListener('click', () => navigatePage(-1, baseUrl, pages));
-    elements.nextPageBtn.addEventListener('click', () => navigatePage(1, baseUrl, pages));
+    elements.prevPageBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderCurrentPage(baseUrl, pages);
+        updatePageControls();
+        window.scrollTo(0, 0);
+      }
+    });
+    
+    elements.nextPageBtn.addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderCurrentPage(baseUrl, pages);
+        updatePageControls();
+        window.scrollTo(0, 0);
+      }
+    });
   }
   
   // Keyboard navigation
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') {
-      navigatePage(-1, baseUrl, pages);
-    } else if (e.key === 'ArrowRight') {
-      navigatePage(1, baseUrl, pages);
+    if (e.key === 'ArrowLeft' && currentPage > 1) {
+      currentPage--;
+      renderCurrentPage(baseUrl, pages);
+      updatePageControls();
+      window.scrollTo(0, 0);
+    } else if (e.key === 'ArrowRight' && currentPage < totalPages) {
+      currentPage++;
+      renderCurrentPage(baseUrl, pages);
+      updatePageControls();
+      window.scrollTo(0, 0);
     }
   });
-}
-
-function navigatePage(direction, baseUrl, pages) {
-  const newPage = currentPage + direction;
-  if (newPage < 1 || newPage > totalPages) return;
   
-  currentPage = newPage;
-  updatePageControls();
-  renderCurrentPage(baseUrl, pages);
-  
-  // Smooth scroll to top
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Add MangaDex fallback link
+  const fallbackDiv = document.createElement('div');
+  fallbackDiv.className = 'md-fallback';
+  fallbackDiv.innerHTML = `
+    <p>Having issues? <a href="https://mangadex.org/chapter/${chapterId}" target="_blank">Read on MangaDex</a></p>
+  `;
+  elements.chapterPages.appendChild(fallbackDiv);
 }
 
 function renderCurrentPage(baseUrl, pages) {
@@ -333,7 +318,7 @@ function renderCurrentPage(baseUrl, pages) {
       src="${baseUrl}/data/${pages[currentPage-1]}" 
       alt="Page ${currentPage}" 
       class="chapter-page"
-      onerror="this.src='https://via.placeholder.com/800x1200/cccccc/969696?text=Page+Load+Error'"
+      onerror="this.onerror=null;this.src='https://placehold.co/800x1200?text=Page+${currentPage}+Failed+to+Load'"
     >
   `;
 }
@@ -350,4 +335,30 @@ function updatePageControls() {
   if (elements.nextPageBtn) {
     elements.nextPageBtn.disabled = currentPage >= totalPages;
   }
+}
+
+function showMangaDexFallback(url) {
+  elements.chapterPages.innerHTML = `
+    <div class="md-fallback">
+      <h3>Redirecting to MangaDex...</h3>
+      <p>You will be automatically redirected in 3 seconds.</p>
+      <p><a href="${url}" target="_blank">Click here</a> if you are not redirected.</p>
+    </div>
+  `;
+  setTimeout(() => {
+    window.location.href = url;
+  }, 3000);
+}
+
+function showChapterError(message) {
+  elements.chapterPages.innerHTML = `
+    <div class="error-state">
+      <h3>Failed to load chapter</h3>
+      <p>${message || 'Unknown error occurred'}</p>
+      ${currentMangaId ? `
+        <a href="details.html?id=${currentMangaId}" class="back-btn">Back to Manga</a>
+      ` : ''}
+      <a href="/" class="back-btn">Return to Homepage</a>
+    </div>
+  `;
 }
