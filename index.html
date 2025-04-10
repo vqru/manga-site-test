@@ -3,24 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manga Reader</title>
+  <title>Manga Viewer</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header>
-    <div class="container">
-      <h1>Manga Reader</h1>
-      <div class="search-box">
-        <input type="text" id="search-input" placeholder="Search manga...">
+  <div class="container">
+    <header>
+      <h1>Manga Viewer</h1>
+      <div class="search-container">
+        <input type="text" id="search" placeholder="Search manga...">
         <button id="search-btn">Search</button>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main class="container">
-    <div id="manga-list" class="manga-grid"></div>
-  </main>
+    <main>
+      <!-- Manga List View -->
+      <div id="manga-list">
+        <div id="results" class="results-grid"></div>
+        <div id="pagination" class="pagination"></div>
+      </div>
 
-  <script src="script.js"></script>
+      <!-- Manga Details View -->
+      <div id="manga-details" class="hidden">
+        <a href="#" id="back-to-search" class="back-btn">← Back to Search</a>
+        
+        <div class="manga-header">
+          <div id="manga-cover" class="manga-cover"></div>
+          <div class="manga-info">
+            <h2 id="manga-title"></h2>
+            <div id="manga-metadata">
+              <p id="manga-authors"></p>
+              <p id="manga-status"></p>
+              <p id="manga-demographic"></p>
+            </div>
+            <div id="manga-description" class="manga-description"></div>
+          </div>
+        </div>
+        
+        <div class="manga-chapters">
+          <h3>Chapters</h3>
+          <div id="chapters-list" class="chapters-list"></div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p>Data provided by <a href="https://mangadex.org" target="_blank">MangaDex API</a>.</p>
+    </footer>
+  </div>
+
+  <script src="index.js"></script>
 </body>
 </html>
