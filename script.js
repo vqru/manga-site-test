@@ -70,11 +70,11 @@ async function searchManga(query = null) {
 function renderMangaList(mangaData) {
   elements.mangaList.innerHTML = mangaData.map(manga => {
     const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0] || 'Untitled';
-    const coverArt = manga.relationships.find(r => r.type === 'cover_art');
-    const coverUrl = coverArt ? 
-      `https://uploads.mangadex.org/covers/${manga.id}/${coverArt.attributes.fileName}.256.jpg` : 
-      'https://via.placeholder.com/180x250/cccccc/969696?text=No+Cover';
-
+    // Replace existing cover URL logic with:
+const coverArt = manga.relationships.find(r => r.type === 'cover_art');
+const coverUrl = coverArt 
+  ? `https://uploads.mangadex.org/covers/${manga.id}/${coverArt.attributes.fileName}.256.jpg`
+  : 'https://placehold.co/200x300?text=No+Cover'; // Add fallback
     return `
       <div class="manga-card" data-id="${manga.id}">
         <img src="${coverUrl}" alt="${title}" class="manga-cover" onerror="this.src='https://via.placeholder.com/180x250/cccccc/969696?text=Cover+Error'">
