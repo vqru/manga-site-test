@@ -1,73 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MangaVerse</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MangaDex Clone</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>MangaVerse</h1>
-      <input type="text" id="search" placeholder="Search for a manga title or author..." class="search-bar"/>
-      <button onclick="searchManga()">Search</button>
-      <nav class="nav-links">
-        <a href="#">Popular</a>
-        <a href="#">Latest</a>
-        <a href="#">Genres</a>
-        <a href="#">Bookmarks</a>
-        <a href="#">Read History</a>
-        <a href="#">Random</a>
-        <a href="#">Top Rated</a>
-        <a href="#">Browse All</a>
-        <a href="#">About</a>
-      </nav>
-    </header>
-
-    <main>
-      <h2>What are you in the mood to read?</h2>
-      <div class="input-section">
-        <input type="text" placeholder="e.g., Chainsaw Man, Romance, Action..." onkeypress="if(event.key === 'Enter') searchManga()" />
-        <button onclick="searchManga()">↑</button>
+  <header>
+    <div class="container">
+      <h1>MangaDex Clone</h1>
+      <div class="search-box">
+        <input type="text" id="search-input" placeholder="Search manga...">
+        <button id="search-btn">Search</button>
       </div>
-      <div class="button-row">
-        <button onclick="searchManga()">Discover New Manga</button>
-        <button>Continue Reading</button>
-        <button>Top Genres</button>
-        <button>Recommended For You</button>
-        <button>Surprise Me</button>
-      </div>
-      <div id="results" class="manga-grid"></div>
-    </main>
-  </div>
+    </div>
+  </header>
 
-  <script>
-    async function searchManga() {
-      const queryInput = document.getElementById("search") || document.querySelector(".input-section input");
-      const query = queryInput.value.trim();
-      if (!query) return;
+  <main class="container">
+    <div id="manga-list" class="manga-grid"></div>
+    <div id="pagination"></div>
+  </main>
 
-      const response = await fetch(`/.netlify/functions/fetchMangaList?query=${query}`);
-      const data = await response.json();
-
-      const resultsDiv = document.getElementById("results");
-      resultsDiv.innerHTML = data.data.map(manga => {
-        const title = manga.attributes.title.en || "No Title";
-        const coverRel = manga.relationships.find(r => r.type === "cover_art");
-        const coverId = coverRel?.attributes?.fileName;
-        const coverUrl = coverId
-          ? `https://uploads.mangadex.org/covers/${manga.id}/${coverId}.256.jpg`
-          : 'no-cover.jpg';
-
-        return `
-          <div class="manga-card" onclick="location.href='details.html?id=${manga.id}'">
-            <img src="${coverUrl}" alt="${title}">
-            <h3>${title}</h3>
-          </div>
-        `;
-      }).join("");
-    }
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
