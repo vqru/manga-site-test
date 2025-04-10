@@ -1,72 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manga Details</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <a href="/" class="back-button">← Back to Search</a>
+  <header>
+    <div class="container">
+      <a href="/" class="back-btn">← Back to Home</a>
+    </div>
+  </header>
+
+  <main class="container">
     <div id="manga-details"></div>
     <div id="chapters-list"></div>
-  </div>
+  </main>
 
-  <script>
-    async function loadMangaDetails() {
-      const mangaId = new URLSearchParams(window.location.search).get('id');
-      
-      try {
-        const response = await fetch(`/.netlify/functions/fetchMangaDetails?id=${mangaId}`);
-        const { manga, chapters } = await response.json();
-
-        // Display Manga Info
-        const detailsDiv = document.getElementById("manga-details");
-        const title = manga.data.attributes.title.en || "No Title";
-        const description = manga.data.attributes.description.en || "No description";
-        const coverId = manga.data.relationships.find(r => r.type === "cover_art")?.attributes?.fileName;
-        const coverUrl = coverId ? `https://uploads.mangadex.org/covers/${manga.data.id}/${coverId}.512.jpg` : '';
-
-        detailsDiv.innerHTML = `
-          <div class="manga-header">
-            <img src="${coverUrl}" alt="${title}" class="manga-cover">
-            <div class="manga-info">
-              <h1>${title}</h1>
-              <p>${description}</p>
-            </div>
-          </div>
-        `;
-
-        // Display Chapters
-        const chaptersDiv = document.getElementById("chapters-list");
-        if (chapters.data.length === 0) {
-          chaptersDiv.innerHTML = "<p>No chapters available.</p>";
-          return;
-        }
-
-        chaptersDiv.innerHTML = `
-          <h2>Chapters</h2>
-          <div class="chapters-container">
-            ${chapters.data.map(chapter => `
-              <div class="chapter-card" onclick="readChapter('${chapter.id}')">
-                <h3>Chapter ${chapter.attributes.chapter || 'N/A'}</h3>
-                <p>${chapter.attributes.title || ''}</p>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      } catch (error) {
-        console.error("Error loading manga:", error);
-        document.getElementById("manga-details").innerHTML = "<p>Failed to load manga details.</p>";
-      }
-    }
-
-    function readChapter(chapterId) {
-      // Implement chapter reader (next step)
-      alert(`Opening chapter ${chapterId} - implement reader here!`);
-    }
-
-    // Load data when page opens
-    loadMangaDetails();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
