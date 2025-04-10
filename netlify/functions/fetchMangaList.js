@@ -2,7 +2,7 @@ const axios = require('axios');
 
 exports.handler = async (event) => {
   const { query = 'popular', page = 1 } = event.queryStringParameters;
-  const apiUrl = `https://api.mangadex.org/manga?title=${query}&limit=20&offset=${(page-1)*20}&includes[]=cover_art&order[followedCount]=desc`;
+const apiUrl = `https://api.mangadex.org/manga?title=${query}&limit=20&includes[]=cover_art&order[relevance]=desc`;
 
   try {
     const response = await axios.get(apiUrl, {
