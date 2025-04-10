@@ -254,14 +254,17 @@ async function loadChapterReader() {
     renderChapterInfo(chapterData, chapter);
     setupChapterReader(baseUrl, pages);
     
-  } catch (error) {
-    console.error('Chapter load error:', error);
-    elements.chapterPages.innerHTML = `
-      <div class="error-state">
-        <p>Failed to load chapter.</p>
-        <a href="#" id="back-to-manga">Return to Manga</a>
-      </div>
-    `;
+  } // Replace catch block with:
+catch (error) {
+  console.error('Chapter load error:', error);
+  elements.chapterPages.innerHTML = `
+    <div class="error">
+      Failed to load chapter. Possible reasons:<br>
+      1. Chapter not available in English<br>
+      2. MangaDex API limit reached<br>
+      <a href="details.html?id=${currentMangaId}">Back to Manga</a>
+    </div>
+  `;
     
     document.getElementById('back-to-manga').addEventListener('click', () => {
       window.location.href = `details.html?id=${currentMangaId}`;
