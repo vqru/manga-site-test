@@ -1,9 +1,33 @@
 [build]
-  command = "npm install"
-  publish = "public"
-  functions = "netlify/functions"
+  functions = "functions"
+
+# Handle CORS properly for MangaDex API
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, OPTIONS"
+    Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept"
+
+# Add caching for images to improve performance
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Cache-Control = "public, max-age=60"  # Cache for 1 minute
+
+# Make sure server times out after sufficient time
+[functions]
+  node_bundler = "esbuild"
+  included_files = []
+  external_node_modules = ["axios"]
+  
+# Redirects for better URL structure
+[[redirects]]
+  from = "/manga/:id"
+  to = "/details.html?manga=:id"
+  status = 200
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/chapter/:id"
+  to = "/reader.html?chapter=:id"
   status = 200
