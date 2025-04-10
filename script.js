@@ -13,7 +13,8 @@ const elements = {
   prevPageBtn: document.getElementById('prev-page'),
   nextPageBtn: document.getElementById('next-page'),
   backBtn: document.getElementById('back-btn'),
-  mdLink: document.getElementById('md-link')
+  mdLink: document.getElementById('md-link'),
+  mdFallback: document.querySelector('.md-fallback')
 };
 
 // Get URL parameters
@@ -26,17 +27,21 @@ window.addEventListener('DOMContentLoaded', async () => {
   try {
     if (chapterId) {
       // We're in reader mode
+      if (elements.mdFallback) {
+        elements.mdFallback.style.display = 'none'; // Hide initially until we know we need it
+      }
+      
       await loadChapterPages(chapterId);
       setupPagination();
       
       if (mangaId) {
-        elements.backBtn.href = `index.html?manga=${mangaId}`;
+        elements.backBtn.href = `details.html?manga=${mangaId}`;
       } else {
         elements.backBtn.href = 'index.html';
       }
     } else if (mangaId) {
-      // We're on a manga details page - redirect to index.html
-      window.location.href = `index.html?manga=${mangaId}`;
+      // We're on a manga details page - redirect to details.html
+      window.location.href = `details.html?manga=${mangaId}`;
     }
   } catch (error) {
     console.error('Initialization error:', error);
@@ -60,9 +65,17 @@ async function loadChapterPages(chapterId) {
       throw new Error(chapterData.error);
     }
     
-    document.title = `${chapterData.chapter.title} - MangaViewer`;
+    // Set page title
+    const chapterTitle = chapterData.chapter?.title || `Chapter ${chapterData.chapter?.chapter || ''}`;
+    document.title = `${chapterTitle} - MangaViewer`;
     
-    // Next, get chapter pages
+    // Add chapter title to the UI if needed
+    const titleElement = document.createElement('h2');
+    titleElement.className = 'chapter-title';
+    titleElement.textContent = chapterTitle;
+    elements.chapterPages.parentNode.insertBefore(titleElement, elements.chapterPages);
+    
+    // Next, get chapter pages with data-saver for smaller file sizes
     const pagesResponse = await fetch(`${API_BASE}/fetchChapterPages?id=${chapterId}&dataSaver=true`);
     
     if (!pagesResponse.ok) {
@@ -72,7 +85,7 @@ async function loadChapterPages(chapterId) {
     const pagesData = await pagesResponse.json();
     
     // Setup external link fallback
-    if (pagesData.externalUrl) {
+    if (pagesData.externalUrl && elements.mdLink) {
       elements.mdLink.href = pagesData.externalUrl;
     }
     
@@ -83,6 +96,9 @@ async function loadChapterPages(chapterId) {
     
     // Setup the viewer
     window.chapterPages = pagesData.pageUrls;
+    window.totalPages = pagesData.pageUrls.length;
+    
+    // Display the first page
     displayPage(1);
     
     // Update page counter
@@ -93,9 +109,8 @@ async function loadChapterPages(chapterId) {
     showError(`Failed to load chapter: ${error.message}`);
     
     // Show MangaDex fallback link
-    const fallbackDiv = document.querySelector('.md-fallback');
-    if (fallbackDiv) {
-      fallbackDiv.style.display = 'block';
+    if (elements.mdFallback) {
+      elements.mdFallback.style.display = 'block';
     }
   }
 }
@@ -110,22 +125,46 @@ function displayPage(pageNum) {
     currentPage = pageNum;
     elements.chapterPages.innerHTML = '';
     
-    const img = document.createElement('img');
-    img.src = window.chapterPages[pageNum - 1];
-    img.className = 'manga-page';
-    img.alt = `Page ${pageNum}`;
-    
     // Add loading indicator
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'loading';
+    loadingDiv.innerHTML = 'Loading page...';
+    elements.chapterPages.appendChild(loadingDiv);
+    
+    const img = new Image();
+    
+    // Set up onload handler before setting src
     img.onload = () => {
-      elements.pageIndicator.textContent = `Page ${pageNum} / ${window.chapterPages.length}`;
+      elements.chapterPages.innerHTML = ''; // Clear loading indicator
+      img.className = 'manga-page';
+      elements.chapterPages.appendChild(img);
+      elements.pageIndicator.textContent = `Page ${pageNum} / ${window.totalPages}`;
     };
     
     img.onerror = () => {
-      img.src = 'error-placeholder.png'; // Make sure you have this image
+      elements.chapterPages.innerHTML = '';
+      
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-state';
+      errorDiv.innerHTML = `
+        <p>Failed to load page ${pageNum}. This might be due to CORS restrictions or API changes.</p>
+        <p>You can try the following:</p>
+        <a href="javascript:void(0)" onclick="retryPage(${pageNum})">Retry</a>
+        <a href="${elements.mdLink.href}" target="_blank">Read on MangaDex</a>
+      `;
+      elements.chapterPages.appendChild(errorDiv);
+      
+      // Show MangaDex fallback link
+      if (elements.mdFallback) {
+        elements.mdFallback.style.display = 'block';
+      }
+      
       console.error(`Failed to load image for page ${pageNum}`);
     };
     
-    elements.chapterPages.appendChild(img);
+    // Now set the source
+    img.src = window.chapterPages[pageNum - 1];
+    img.alt = `Page ${pageNum}`;
     
     // Update UI state
     elements.prevPageBtn.disabled = pageNum <= 1;
@@ -141,6 +180,11 @@ function displayPage(pageNum) {
     showError(`Failed to display page ${pageNum}: ${error.message}`);
   }
 }
+
+// Function to retry loading a page
+window.retryPage = function(pageNum) {
+  displayPage(pageNum);
+};
 
 // Setup pagination controls
 function setupPagination() {
@@ -165,6 +209,29 @@ function setupPagination() {
     }
   });
   
+  // Touch navigation for mobile
+  let touchStartX = 0;
+  let touchEndX = 0;
+  
+  document.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  });
+  
+  document.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipe();
+  });
+  
+  function handleSwipe() {
+    if (touchEndX < touchStartX - 50) {
+      // Swipe left, go to next page
+      elements.nextPageBtn.click();
+    } else if (touchEndX > touchStartX + 50) {
+      // Swipe right, go to previous page
+      elements.prevPageBtn.click();
+    }
+  }
+  
   // Check if there's a page parameter in the URL
   const pageParam = urlParams.get('page');
   if (pageParam && !isNaN(parseInt(pageParam))) {
@@ -183,5 +250,10 @@ function showError(message) {
     elements.chapterPages.appendChild(errorDiv);
   } else {
     document.body.insertBefore(errorDiv, document.body.firstChild);
+  }
+  
+  // Show MangaDex fallback
+  if (elements.mdFallback) {
+    elements.mdFallback.style.display = 'block';
   }
 }
