@@ -172,6 +172,13 @@ function renderChapterList(chapters) {
   }
 
   // Group by volume
+  function renderChapterList(chapters) {
+  if (!chapters || chapters.length === 0) {
+    elements.chaptersList.innerHTML = '<p>No English chapters available</p>';
+    return;
+  }
+
+  // Group chapters by volume (including 'No Volume')
   const volumes = {};
   chapters.forEach(chapter => {
     const vol = chapter.attributes.volume || 'No Volume';
@@ -179,40 +186,32 @@ function renderChapterList(chapters) {
     volumes[vol].push(chapter);
   });
 
-  // Sort volumes
+  // Sort volumes - 'No Volume' first if it has latest chapters
   const sortedVolumes = Object.keys(volumes).sort((a, b) => {
-    if (a === 'No Volume') return 1;
-    if (b === 'No Volume') return -1;
-    return parseFloat(b) - parseFloat(a);
+    if (a === 'No Volume') return -1;
+    if (b === 'No Volume') return 1;
+    return b - a; // Latest volumes first
   });
 
-  elements.chaptersList.innerHTML = sortedVolumes.map(vol => {
-    return `
-      <div class="volume-section">
-        <h2>${vol === 'No Volume' ? 'Chapters' : `Volume ${vol}`}</h2>
-        <div class="chapter-list">
-          ${volumes[vol].map(chapter => {
-            const scanGroup = chapter.relationships.find(r => r.type === 'scanlation_group');
-            const groupName = scanGroup?.attributes?.name || 'Unknown group';
-            const chapterNum = chapter.attributes.chapter ? `Chapter ${chapter.attributes.chapter}` : 'Oneshot';
-            
-            return `
-              <div class="chapter-item" data-id="${chapter.id}">
-                <div class="chapter-info">
-                  <h3>${chapterNum}</h3>
-                  ${chapter.attributes.title ? `<p>${chapter.attributes.title}</p>` : ''}
-                </div>
-                <div class="chapter-meta">
-                  <span class="group-name">${groupName}</span>
-                  <button class="read-btn">Read</button>
-                </div>
-              </div>
-            `;
-          }).join('')}
-        </div>
+  elements.chaptersList.innerHTML = sortedVolumes.map(vol => `
+    <div class="volume-section">
+      <h2>${vol === 'No Volume' ? 'Latest Chapters' : `Volume ${vol}`}</h2>
+      <div class="chapter-list">
+        ${volumes[vol].map(chapter => `
+          <div class="chapter-item" data-id="${chapter.id}">
+            <div>
+              <h3>${chapter.attributes.chapter ? `Chapter ${chapter.attributes.chapter}` : 'Oneshot'}</h3>
+              ${chapter.attributes.title ? `<p>${chapter.attributes.title}</p>` : ''}
+            </div>
+            <a href="https://mangadex.org/chapter/${chapter.id}" target="_blank" class="read-external">
+              Read on MangaDex
+            </a>
+          </div>
+        `).join('')}
       </div>
-    `;
-  }).join('');
+    </div>
+  `).join('');
+}
 
   // Add click events
   document.querySelectorAll('.chapter-item').forEach(item => {
