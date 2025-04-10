@@ -14,7 +14,8 @@ const elements = {
   pageIndicator: document.getElementById('page-indicator'),
   prevPageBtn: document.getElementById('prev-page'),
   nextPageBtn: document.getElementById('next-page'),
-  backBtn: document.getElementById('back-btn')
+  backBtn: document.getElementById('back-btn'),
+  mdLink: document.getElementById('md-link')
 };
 
 // Initialize based on current page
@@ -33,14 +34,13 @@ document.addEventListener('DOMContentLoaded', () => {
 // ====================
 
 function setupHomepage() {
-  // Set up event listeners
-  elements.searchBtn.addEventListener('click', () => searchManga());
-  elements.searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') searchManga();
-  });
-
-  // Load popular manga by default
-  searchManga('popular');
+  if (elements.searchBtn && elements.searchInput) {
+    elements.searchBtn.addEventListener('click', () => searchManga());
+    elements.searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') searchManga();
+    });
+    searchManga('popular');
+  }
 }
 
 async function searchManga(query = null) {
@@ -52,7 +52,7 @@ async function searchManga(query = null) {
     
     if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
     
-    const { data, total } = await response.json();
+    const { data } = await response.json();
     
     if (!data || data.length === 0) {
       showNoResults();
@@ -147,7 +147,8 @@ async function loadMangaDetails() {
 function renderMangaDetails(manga) {
   const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0] || 'Untitled';
   const description = manga.attributes.description.en || 'No description available';
-  const author = manga.relationships.find(r => r.type === 'author');
+  const author = manga.relationships.find(r => r.type === 'author') || 
+                 manga.relationships.find(r => r.type === 'artist');
   const authorName = author?.attributes?.name || 'Unknown author';
   const coverArt = manga.relationships.find(r => r.type === 'cover_art');
   const coverUrl = coverArt 
@@ -234,6 +235,16 @@ async function loadChapterReader() {
     const chapterId = new URLSearchParams(window.location.search).get('id');
     if (!chapterId) return window.location.href = '/';
 
+    if (elements.backBtn) {
+      elements.backBtn.addEventListener('click', () => {
+        window.history.back();
+      });
+    }
+
+    if (elements.mdLink) {
+      elements.mdLink.href = `https://mangadex.org/chapter/${chapterId}`;
+    }
+
     elements.chapterPages.innerHTML = '<div class="loading">Loading chapter...</div>';
     
     // Get chapter data
@@ -244,8 +255,7 @@ async function loadChapterReader() {
     
     if (data.baseUrl && data.pages) {
       // Successfully got chapter pages
-      currentMangaId = data.mangaId;
-      setupChapterReader(data.baseUrl, data.pages, chapterId);
+      setupChapterReader(data.baseUrl, data.pages);
     } else if (data.externalUrl) {
       // Fallback to MangaDex
       showMangaDexFallback(data.externalUrl);
@@ -259,7 +269,7 @@ async function loadChapterReader() {
   }
 }
 
-function setupChapterReader(baseUrl, pages, chapterId) {
+function setupChapterReader(baseUrl, pages) {
   totalPages = pages.length;
   currentPage = 1;
   
@@ -302,14 +312,6 @@ function setupChapterReader(baseUrl, pages, chapterId) {
       window.scrollTo(0, 0);
     }
   });
-  
-  // Add MangaDex fallback link
-  const fallbackDiv = document.createElement('div');
-  fallbackDiv.className = 'md-fallback';
-  fallbackDiv.innerHTML = `
-    <p>Having issues? <a href="https://mangadex.org/chapter/${chapterId}" target="_blank">Read on MangaDex</a></p>
-  `;
-  elements.chapterPages.appendChild(fallbackDiv);
 }
 
 function renderCurrentPage(baseUrl, pages) {
@@ -355,9 +357,7 @@ function showChapterError(message) {
     <div class="error-state">
       <h3>Failed to load chapter</h3>
       <p>${message || 'Unknown error occurred'}</p>
-      ${currentMangaId ? `
-        <a href="details.html?id=${currentMangaId}" class="back-btn">Back to Manga</a>
-      ` : ''}
+      <a href="#" onclick="window.history.back()" class="back-btn">Back to Manga</a>
       <a href="/" class="back-btn">Return to Homepage</a>
     </div>
   `;
