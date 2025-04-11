@@ -360,3 +360,11 @@ function showError(message) {
     elements.mdFallback.style.display = 'block';
   }
 }
+// Collapse/expand chapter volumes
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.volume-section h2').forEach(header => {
+    header.addEventListener('click', () => {
+      header.parentElement.classList.toggle('collapsed');
+    });
+  });
+});
