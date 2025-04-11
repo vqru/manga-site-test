@@ -9,6 +9,7 @@
   --border-radius: 14px;
   --shadow: 0 8px 24px rgba(255, 255, 255, 0.05);
   --transition: all 0.3s ease;
+  --hover-glow: 0 0 12px rgba(255, 255, 255, 0.15);
 }
 
 * {
@@ -24,6 +25,20 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   scroll-behavior: smooth;
+  scrollbar-color: #444 #000;
+  scrollbar-width: thin;
+}
+
+/* WebKit Scrollbar */
+body::-webkit-scrollbar {
+  width: 8px;
+}
+body::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 10px;
+}
+body::-webkit-scrollbar-track {
+  background: #000;
 }
 
 .container {
@@ -67,22 +82,30 @@ header h1 {
   color: var(--text);
 }
 
+button, .read-btn, .md-btn, #search-btn, .page-btn, .back-btn {
+  transition: var(--transition);
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+  user-select: none;
+}
+
+button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:active, .back-btn:active {
+  transform: scale(0.96);
+}
+
 #search-btn {
   background: var(--secondary);
   color: #fff;
   padding: 12px 25px;
-  border: none;
-  border-radius: 999px;
-  cursor: pointer;
-  font-weight: bold;
   font-size: 1rem;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
-  transition: var(--transition);
 }
 
 #search-btn:hover {
   background: var(--secondary-light);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+  box-shadow: var(--hover-glow);
 }
 
 .results-grid, .manga-grid {
@@ -104,7 +127,7 @@ header h1 {
 
 .manga-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
+  box-shadow: var(--hover-glow);
 }
 
 .manga-cover {
@@ -150,18 +173,14 @@ header h1 {
   background: var(--secondary);
   color: #fff;
   padding: 10px 18px;
-  border-radius: 999px;
   text-decoration: none;
   z-index: 2000;
-  font-weight: bold;
   font-size: 0.95rem;
-  transition: var(--transition);
-  box-shadow: 0 0 10px rgba(255,255,255,0.1);
 }
 
 .back-btn:hover {
   background: var(--secondary-light);
-  box-shadow: 0 0 20px rgba(255,255,255,0.2);
+  box-shadow: var(--hover-glow);
 }
 
 .manga-header {
@@ -211,6 +230,11 @@ header h1 {
   margin-bottom: 12px;
   border-bottom: 2px solid var(--secondary-light);
   cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.volume-title:hover {
+  color: var(--primary);
 }
 
 .volume-chapters {
@@ -218,6 +242,16 @@ header h1 {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 15px;
   margin-top: 10px;
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+}
+
+.volume-chapters.collapsed {
+  max-height: 0;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .chapter-item {
@@ -228,7 +262,6 @@ header h1 {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  transition: var(--transition);
 }
 
 .chapter-item:hover {
@@ -255,18 +288,13 @@ header h1 {
 .read-btn, .md-btn {
   background: var(--secondary);
   color: white;
-  border-radius: 999px;
   padding: 8px 16px;
-  text-decoration: none;
   font-size: 0.85rem;
-  font-weight: bold;
-  transition: var(--transition);
-  box-shadow: 0 0 8px rgba(255,255,255,0.05);
 }
 
 .read-btn:hover, .md-btn:hover {
   background: var(--secondary-light);
-  box-shadow: 0 0 12px rgba(255,255,255,0.1);
+  box-shadow: var(--hover-glow);
 }
 
 .pagination {
@@ -281,9 +309,6 @@ header h1 {
   color: var(--text);
   border: 1px solid #444;
   padding: 8px 16px;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: var(--transition);
 }
 
 .page-btn.active, .page-btn:hover {
@@ -317,6 +342,25 @@ header h1 {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Floating Action Button (FAB) */
+.fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--secondary);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 16px;
+  font-size: 1.2rem;
+  z-index: 999;
+  box-shadow: 0 0 18px rgba(255,255,255,0.1);
+  transition: var(--transition);
+}
+.fab:hover {
+  background: var(--secondary-light);
+  box-shadow: var(--hover-glow);
 }
 
 @media (max-width: 768px) {
