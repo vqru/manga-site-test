@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manga Viewer</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Manga Viewer</h1>
+      <div class="search-container">
+        <input type="text" id="search" placeholder="Search manga...">
+        <button id="search-btn">Search</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Loading Indicator -->
+      <div id="loading-state" class="loading-container hidden">
+        <div class="loading-spinner"></div>
+      </div>
+
+      <!-- Manga List View -->
+      <div id="manga-list">
+        <div id="results" class="manga-grid"></div>
+        <div id="pagination"></div>
+      </div>
+
+      <!-- Manga Details View -->
+      <div id="manga-details" class="hidden">
+        <a href="#" id="back-to-search" class="back-btn">← Back to Search</a>
+        
+        <div class="manga-header">
+          <div id="manga-cover" class="manga-cover-large"></div>
+          <div class="manga-info">
+            <h2 id="manga-title"></h2>
+            <div id="manga-metadata">
+              <p id="manga-authors"></p>
+              <p id="manga-status"></p>
+              <p id="manga-demographic"></p>
+            </div>
+            <div id="manga-description" class="description"></div>
+          </div>
+        </div>
+        
+        <div class="chapters-container">
+          <h3>Chapters</h3>
+          <div id="chapters-list" class="chapter-list"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html>
