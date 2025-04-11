@@ -70,6 +70,61 @@ async function loadMangaDetails(mangaId) {
 
 function displayMangaDetails(data) {
   const manga = data.manga;
+  const volumes = data.volumes || {};
+
+  const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0] || 'Unknown Title';
+  const coverUrl = `/.netlify/functions/proxyImage?url=${encodeURIComponent(manga.coverUrl || '')}`;
+  document.title = `${title} - Manga Viewer`;
+  document.getElementById('manga-title').textContent = title;
+  document.getElementById('manga-cover').innerHTML = `<img src="${coverUrl}" alt="${title}" onerror="this.src='placeholder.jpg'">`;
+  document.getElementById('manga-authors').textContent =
+    manga.relationships?.find(r => r.type === 'author')?.attributes?.name || 'Unknown';
+  document.getElementById('manga-status').textContent = manga.attributes.status || 'Unknown';
+  document.getElementById('manga-demographic').textContent = manga.attributes.publicationDemographic || 'Unknown';
+  document.getElementById('manga-description').innerHTML = manga.attributes.description?.en || 'No description.';
+
+  displayChaptersList(volumes);
+}
+
+function displayChaptersList(volumes) {
+  try {
+    if (!volumes || Object.keys(volumes).length === 0) {
+      elements.chaptersList.innerHTML = '<div class="no-chapters">No chapters available.</div>';
+      return;
+    }
+
+    const volumeKeys = Object.keys(volumes);
+
+    elements.chaptersList.innerHTML = volumeKeys.map(vol => `
+      <div class="volume-section">
+        <h4 class="volume-title">${vol === 'No Volume' ? 'Chapters' : `Volume ${vol}`}</h4>
+        <div class="volume-chapters">
+          ${volumes[vol].map(chapter => `
+            <div class="chapter-item">
+              <div class="chapter-info">
+                <a href="reader.html?manga=${mangaId}&chapter=${chapter.id}" class="chapter-link">
+                  <strong>${chapter.chapter === 'No Chapter' ? 'Oneshot' : `Chapter ${chapter.chapter}`}</strong>
+                  ${chapter.title ? `<span class="chapter-title">${chapter.title}</span>` : ''}
+                </a>
+                <div class="chapter-group">${chapter.groupName || ''}</div>
+              </div>
+              <div class="chapter-actions">
+                <a href="reader.html?manga=${mangaId}&chapter=${chapter.id}" class="btn read-btn">Read</a>
+                <a href="https://mangadex.org/chapter/${chapter.id}" target="_blank" class="btn md-btn">MD</a>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error('Error displaying chapters list:', error);
+    elements.chaptersList.innerHTML = `<div class="error-message">Failed to load chapters list: ${error.message}</div>`;
+  }
+}
+
+function displayMangaDetails(data) {
+  const manga = data.manga;
   const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0] || 'Unknown Title';
   const coverUrl = `/.netlify/functions/proxyImage?url=${encodeURIComponent(manga.coverUrl || '')}`;
   document.title = `${title} - Manga Viewer`;
