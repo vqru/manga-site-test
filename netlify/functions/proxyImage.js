@@ -3,7 +3,7 @@ const axios = require('axios');
 exports.handler = async (event) => {
   // Get the URL to proxy from query parameters
   const imageUrl = event.queryStringParameters.url;
-  
+
   if (!imageUrl) {
     return {
       statusCode: 400,
@@ -25,32 +25,24 @@ exports.handler = async (event) => {
       }
     });
 
-    // Get content type from response
     const contentType = response.headers['content-type'] || 'image/jpeg';
-    
-    // Return the image with appropriate headers
+
     return {
       statusCode: 200,
       headers: {
         'Content-Type': contentType,
-        'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'public, max-age=86400' // Cache for 24 hours
+        'Cache-Control': 'public, max-age=86400' // Cache for 1 day
       },
-      body: Buffer.from(response.data, 'binary').toString('base64'),
+      body: response.data.toString('base64'),
       isBase64Encoded: true
     };
+
   } catch (error) {
-    console.error('Image proxy error:', error);
     return {
       statusCode: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
       body: JSON.stringify({
         error: 'Failed to proxy image',
-        message: error.message,
-        url: imageUrl
+        details: error.message || 'Unknown error'
       })
     };
   }
