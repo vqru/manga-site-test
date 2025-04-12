@@ -29,7 +29,6 @@ body {
   scrollbar-width: thin;
 }
 
-/* WebKit Scrollbar */
 body::-webkit-scrollbar {
   width: 8px;
 }
@@ -110,8 +109,8 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
 
 .results-grid, .manga-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Changed from 240px to 150px */
-  gap: 15px; /* Reduced from 25px */
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
   margin-top: 30px;
 }
 
@@ -131,7 +130,7 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
 }
 
 .manga-cover {
-  height: 220px; /* Reduced from 320px */
+  height: 220px;
   background-color: #111;
   overflow: hidden;
 }
@@ -141,8 +140,8 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
-  image-rendering: -webkit-optimize-contrast; /* Added for sharpness */
-  image-rendering: crisp-edges; /* Added for sharpness */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 .manga-card:hover img {
@@ -203,6 +202,8 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
 .manga-cover-large img {
   width: 100%;
   border-radius: var(--border-radius);
+  aspect-ratio: 3/4;
+  object-fit: cover;
 }
 
 .manga-info {
@@ -216,9 +217,63 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
   color: var(--text);
 }
 
-.manga-meta p, .manga-description {
+.manga-meta p {
   margin: 8px 0;
   color: var(--text-light);
+}
+
+.manga-description {
+  margin: 15px 0;
+  color: var(--text-light);
+  position: relative;
+  max-height: 150px;
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+}
+
+.manga-description::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(to bottom, transparent, var(--card-bg));
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.manga-description.expanded {
+  max-height: 1000px;
+}
+
+.manga-description.expanded::after {
+  opacity: 0;
+}
+
+.read-more-btn {
+  background: transparent;
+  color: var(--primary);
+  border: none;
+  padding: 5px 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.read-more-btn:hover {
+  text-decoration: underline;
+}
+
+.read-more-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.read-more-btn.expanded svg {
+  transform: rotate(180deg);
 }
 
 .volume-section {
@@ -346,7 +401,6 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
   to { transform: rotate(360deg); }
 }
 
-/* Floating Action Button (FAB) */
 .fab {
   position: fixed;
   bottom: 20px;
@@ -360,6 +414,7 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
   box-shadow: 0 0 18px rgba(255,255,255,0.1);
   transition: var(--transition);
 }
+
 .fab:hover {
   background: var(--secondary-light);
   box-shadow: var(--hover-glow);
@@ -368,6 +423,7 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
 @media (max-width: 768px) {
   .manga-header {
     flex-direction: column;
+    gap: 20px;
   }
 
   .volume-chapters {
@@ -383,13 +439,47 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
     justify-content: flex-end;
   }
 
-  /* Added: Force 2 columns for manga grids on mobile */
   .results-grid, .manga-grid {
     grid-template-columns: repeat(2, minmax(120px, 1fr));
     gap: 12px;
   }
 
   .manga-cover {
-    height: 180px; /* Adjusted for mobile */
+    height: 180px;
+  }
+
+  #manga-details {
+    padding: 15px;
+    overflow-x: hidden;
+  }
+
+  .manga-cover-large {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  .manga-info {
+    min-width: 100%;
+    padding: 0 10px;
+  }
+
+  .manga-info h2 {
+    font-size: 1.5rem;
+  }
+
+  .manga-description {
+    max-height: 120px;
+  }
+
+  .volume-section {
+    margin-bottom: 20px;
+  }
+
+  .volume-title {
+    font-size: 1.1rem;
+  }
+
+  .chapter-item {
+    padding: 10px;
   }
 }
