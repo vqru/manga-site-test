@@ -30,14 +30,19 @@ const urlParams = new URLSearchParams(window.location.search);
 const mangaId = urlParams.get('manga');
 const chapterId = urlParams.get('chapter');
 
-// Read More Toggle Functionality - NEW
+// Read More Toggle Functionality
 function setupReadMoreButtons() {
   document.querySelectorAll('.read-more-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const description = btn.previousElementSibling;
+    // Remove any existing listeners to prevent duplicates
+    btn.replaceWith(btn.cloneNode(true));
+    
+    // Add new listener
+    const newBtn = document.querySelector(`#${btn.id}`) || btn;
+    newBtn.addEventListener('click', () => {
+      const description = newBtn.previousElementSibling;
       description.classList.toggle('expanded');
-      btn.classList.toggle('expanded');
-      btn.innerHTML = description.classList.contains('expanded') 
+      newBtn.classList.toggle('expanded');
+      newBtn.innerHTML = description.classList.contains('expanded') 
         ? 'Read Less <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 15l-6-6-6 6" stroke-width="2" stroke-linecap="round"/></svg>'
         : 'Read More <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6" stroke-width="2" stroke-linecap="round"/></svg>';
     });
@@ -62,7 +67,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     } else if (mangaId) {
       await loadMangaDetails(mangaId);
     }
-    setupReadMoreButtons(); // NEW - Initialize read more buttons
+    setupReadMoreButtons();
   } catch (error) {
     console.error('Initialization error:', error);
     showError(`Failed to initialize page: ${error.message}`);
@@ -95,7 +100,7 @@ function displayMangaDetails(data) {
   elements.mangaStatus.textContent = manga.attributes.status || 'Unknown';
   elements.mangaDemographic.textContent = manga.attributes.publicationDemographic || 'Unknown';
   
-  // UPDATED DESCRIPTION SECTION WITH READ MORE - NEW
+  // Always show Read More button regardless of description length
   elements.mangaDescription.innerHTML = `
     <div class="manga-description">
       ${manga.attributes.description?.en || 'No description.'}
@@ -109,7 +114,7 @@ function displayMangaDetails(data) {
   `;
 
   displayChaptersList(volumes);
-  setupReadMoreButtons(); // NEW - Reinitialize for dynamic content
+  setupReadMoreButtons();
 }
 
 function displayChaptersList(volumes) {
