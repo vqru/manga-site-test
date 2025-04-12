@@ -40,12 +40,129 @@ window.addEventListener('DOMContentLoaded', async () => {
       elements.backBtn.href = mangaId ? `details.html?manga=${mangaId}` : 'index.html';
     } else if (mangaId) {
       await loadMangaDetails(mangaId);
+    } else {
+      await loadHomepageSections();
     }
   } catch (error) {
     console.error('Initialization error:', error);
     showError(`Failed to initialize page: ${error.message}`);
   }
 });
+
+// -------------------------
+// HOMEPAGE SECTION LOADERS
+// -------------------------
+
+async function loadHomepageSections() {
+  try {
+    await Promise.all([
+      loadPopularManga(),
+      loadLatestUpdates(),
+      loadTopManga()
+    ]);
+  } catch (err) {
+    console.error('Homepage load error:', err);
+  }
+}
+
+async function loadPopularManga() {
+  const res = await fetch('https://api.mangadex.org/manga?limit=10&order[followedCount]=desc&includes[]=cover_art&includes[]=author');
+  const data = await res.json();
+  const container = document.getElementById('popular-carousel');
+  if (!container) return;
+
+  container.innerHTML = data.data.map(manga => {
+    const title = manga.attributes.title.en || 'Untitled';
+    const author = manga.relationships.find(r => r.type === 'author')?.attributes?.name || 'Unknown';
+    const cover = manga.relationships.find(r => r.type === 'cover_art')?.attributes?.fileName;
+    const id = manga.id;
+    const imgUrl = `https://uploads.mangadex.org/covers/${id}/${cover}.256.jpg`;
+
+    return `
+      <div class="carousel-card" onclick="window.location.href='details.html?manga=${id}'">
+        <img src="${imgUrl}" alt="${title}">
+        <div class="carousel-info">
+          <h3>${title}</h3>
+          <p>${author}</p>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadLatestUpdates() {
+  const res = await fetch('https://api.mangadex.org/chapter?limit=12&order[readableAt]=desc&includes[]=manga&includes[]=scanlation_group');
+  const data = await res.json();
+  const container = document.getElementById('latest-updates');
+  if (!container) return;
+
+  container.innerHTML = data.data.map(chap => {
+    const title = chap.attributes.title || '';
+    const chapNum = chap.attributes.chapter || 'Oneshot';
+    const volNum = chap.attributes.volume ? `Vol. ${chap.attributes.volume}` : '';
+    const manga = chap.relationships.find(r => r.type === 'manga');
+    const scanGroup = chap.relationships.find(r => r.type === 'scanlation_group');
+    const scanName = scanGroup?.attributes?.name || '';
+    const mangaTitle = manga?.attributes?.title?.en || 'Unknown';
+    const mangaId = manga?.id;
+    const time = new Date(chap.attributes.readableAt);
+    const timeAgo = getTimeAgo(time);
+
+    return `
+      <div class="update-entry" onclick="window.location.href='details.html?manga=${mangaId}'">
+        <div class="update-thumb"></div>
+        <div class="update-info">
+          <h4>${mangaTitle}</h4>
+          <p>${volNum} Ch. ${chapNum} – ${title}</p>
+          <small>${scanName} • ${timeAgo}</small>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadTopManga() {
+  const res = await fetch('https://api.mangadex.org/manga?limit=10&order[rating]=desc&includes[]=cover_art');
+  const data = await res.json();
+  const container = document.getElementById('top-manga-list');
+  if (!container) return;
+
+  container.innerHTML = data.data.map((manga, i) => {
+    const title = manga.attributes.title.en || 'Untitled';
+    const cover = manga.relationships.find(r => r.type === 'cover_art')?.attributes?.fileName;
+    const id = manga.id;
+    const imgUrl = `https://uploads.mangadex.org/covers/${id}/${cover}.256.jpg`;
+
+    return `
+      <div class="top-manga-card" onclick="window.location.href='details.html?manga=${id}'">
+        <span class="rank-badge">#${i + 1}</span>
+        <img src="${imgUrl}" alt="${title}">
+        <p>${title}</p>
+      </div>
+    `;
+  }).join('');
+}
+
+function getTimeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  const units = [
+    { label: 'y', seconds: 31536000 },
+    { label: 'mo', seconds: 2592000 },
+    { label: 'd', seconds: 86400 },
+    { label: 'h', seconds: 3600 },
+    { label: 'm', seconds: 60 },
+    { label: 's', seconds: 1 }
+  ];
+  for (const unit of units) {
+    const value = Math.floor(seconds / unit.seconds);
+    if (value >= 1) return `${value}${unit.label}`;
+  }
+  return 'just now';
+}
+
+// -------------------------
+// DETAILS / READER LOGIC
+// -------------------------
 
 async function loadMangaDetails(mangaId) {
   try {
@@ -121,7 +238,6 @@ function displayChaptersList(volumes) {
   }
 }
 
-// Page loading logic
 async function loadChapterPages(chapterId) {
   try {
     const loadingElement = document.createElement('div');
