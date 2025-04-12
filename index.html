@@ -18,9 +18,27 @@
 
     <main>
       <!-- Manga List View -->
-      <div id="manga-list">
-        <div id="results" class="results-grid"></div>
-        <div id="pagination" class="pagination"></div>
+      <div id="homepage">
+        <section class="hero-carousel">
+          <h2>Popular New Titles</h2>
+          <div class="carousel-wrapper" id="popular-carousel">
+            <!-- Dynamically injected popular manga cards -->
+          </div>
+        </section>
+
+        <section class="latest-updates">
+          <h2>Latest Updates</h2>
+          <div class="updates-list" id="latest-updates">
+            <!-- Dynamically injected update entries -->
+          </div>
+        </section>
+
+        <section class="top-manga">
+          <h2>Top Manga Today</h2>
+          <div class="top-scroll" id="top-manga-list">
+            <!-- Dynamically injected top manga cards -->
+          </div>
+        </section>
       </div>
 
       <!-- Manga Details View -->
