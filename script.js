@@ -30,6 +30,20 @@ const urlParams = new URLSearchParams(window.location.search);
 const mangaId = urlParams.get('manga');
 const chapterId = urlParams.get('chapter');
 
+// Read More Toggle Functionality - NEW
+function setupReadMoreButtons() {
+  document.querySelectorAll('.read-more-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const description = btn.previousElementSibling;
+      description.classList.toggle('expanded');
+      btn.classList.toggle('expanded');
+      btn.innerHTML = description.classList.contains('expanded') 
+        ? 'Read Less <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 15l-6-6-6 6" stroke-width="2" stroke-linecap="round"/></svg>'
+        : 'Read More <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 9l6 6 6-6" stroke-width="2" stroke-linecap="round"/></svg>';
+    });
+  });
+}
+
 // Initialize page based on URL parameters
 window.addEventListener('DOMContentLoaded', async () => {
   try {
@@ -48,6 +62,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     } else if (mangaId) {
       await loadMangaDetails(mangaId);
     }
+    setupReadMoreButtons(); // NEW - Initialize read more buttons
   } catch (error) {
     console.error('Initialization error:', error);
     showError(`Failed to initialize page: ${error.message}`);
@@ -79,9 +94,22 @@ function displayMangaDetails(data) {
   elements.mangaAuthors.textContent = manga.relationships?.find(r => r.type === 'author')?.attributes?.name || 'Unknown';
   elements.mangaStatus.textContent = manga.attributes.status || 'Unknown';
   elements.mangaDemographic.textContent = manga.attributes.publicationDemographic || 'Unknown';
-  elements.mangaDescription.innerHTML = manga.attributes.description?.en || 'No description.';
+  
+  // UPDATED DESCRIPTION SECTION WITH READ MORE - NEW
+  elements.mangaDescription.innerHTML = `
+    <div class="manga-description">
+      ${manga.attributes.description?.en || 'No description.'}
+    </div>
+    <button class="read-more-btn">
+      Read More 
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M6 9l6 6 6-6" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+  `;
 
   displayChaptersList(volumes);
+  setupReadMoreButtons(); // NEW - Reinitialize for dynamic content
 }
 
 function displayChaptersList(volumes) {
@@ -121,7 +149,6 @@ function displayChaptersList(volumes) {
   }
 }
 
-// Chapter page logic (unchanged)
 async function loadChapterPages(chapterId) {
   try {
     const loadingElement = document.createElement('div');
@@ -360,6 +387,7 @@ function showError(message) {
     elements.mdFallback.style.display = 'block';
   }
 }
+
 // Collapse/expand chapter volumes
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.volume-section h2').forEach(header => {
