@@ -191,7 +191,7 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
   flex-wrap: wrap;
 }
 
-/* Fixed Image Cutoff */
+/* Image fix */
 .manga-cover-large {
   width: 100%;
   max-width: 300px;
@@ -231,15 +231,16 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
   color: var(--text-light);
 }
 
-/* Enhanced Read More Functionality */
+/* Description toggle on click */
 .manga-description {
   margin: 15px 0;
   color: var(--text-light);
-  position: relative;
-  max-height: 4.5em; /* Show about 3 lines of text */
+  max-height: 4.5em;
   overflow: hidden;
-  transition: max-height 0.5s ease;
+  transition: max-height 0.4s ease;
   line-height: 1.5em;
+  cursor: pointer;
+  position: relative;
 }
 
 .manga-description::after {
@@ -249,9 +250,8 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
   left: 0;
   right: 0;
   height: 1.5em;
-  background: linear-gradient(to bottom, transparent, var(--card-bg) 80%);
-  opacity: 1;
-  transition: opacity 0.3s ease;
+  background: linear-gradient(to bottom, transparent, var(--card-bg));
+  pointer-events: none;
 }
 
 .manga-description.expanded {
@@ -259,36 +259,10 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
 }
 
 .manga-description.expanded::after {
-  opacity: 0;
+  display: none;
 }
 
-.read-more-btn {
-  background: transparent;
-  color: var(--primary);
-  border: none;
-  padding: 8px 0;
-  font-size: 0.9rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 8px;
-  width: 100%;
-  justify-content: flex-start;
-}
-
-.read-more-btn:hover {
-  text-decoration: underline;
-}
-
-.read-more-btn svg {
-  transition: transform 0.3s ease;
-  margin-left: 5px;
-}
-
-.read-more-btn.expanded svg {
-  transform: rotate(180deg);
-}
+/* Remove read-more-btn class entirely */
 
 .volume-section {
   margin-bottom: 30px;
