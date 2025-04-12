@@ -2,82 +2,62 @@ const axios = require('axios');
 
 exports.handler = async (event) => {
   const { id } = event.queryStringParameters;
-  
+
   try {
-    // First, fetch chapter data with improved headers and timeout settings
-    const response = await axios.get(`https://api.mangadex.org/at-home/server/${id}`, {
-      timeout: 20000, // Increased timeout for slower connections
+    // Request MangaPlus viewer data
+    const response = await axios.get(`https://jumpg-webapi.tokyo-cdn.com/api/manga_viewer?chapter_id=${id}&split=no&img_quality=super_high`, {
+      timeout: 15000,
       headers: {
         'User-Agent': 'MangaReader/1.0 (manga-reader-app)',
         'Accept': 'application/json',
-        'Origin': 'https://your-site-domain.netlify.app', // Update with your actual domain
-        'Referer': 'https://your-site-domain.netlify.app/' // Update with your actual domain
+        'Origin': 'https://your-site-domain.netlify.app',
+        'Referer': 'https://your-site-domain.netlify.app/'
       }
     });
-    
-    // Check if we have valid data
-    if (!response.data || !response.data.baseUrl || !response.data.chapter) {
-      throw new Error('Invalid chapter data structure received from MangaDex API');
-    }
-    
-    // Get the base URL and chapter data
-    const baseUrl = response.data.baseUrl;
-    const hash = response.data.chapter.hash;
-    
-    // Default to dataSaver to reduce loading issues
-    const dataSaver = event.queryStringParameters.dataSaver !== 'false'; // Default to true
-    const pages = dataSaver ? response.data.chapter.dataSaver : response.data.chapter.data;
-    
+
+    const pages = response.data.success?.mangaPages;
+
     if (!pages || !Array.isArray(pages) || pages.length === 0) {
-      throw new Error('No pages found for this chapter');
+      throw new Error('No pages found in MangaPlus response');
     }
-    
-    // Create array of page URLs with correct path based on dataSaver preference
-    // Try both patterns the MangaDex API may use
-    const pageUrls = pages.map(page => {
-      const path = dataSaver ? 'data-saver' : 'data';
-      return `${baseUrl}/${path}/${hash}/${page}`;
-    });
 
-    // Create a proxied version of URLs through our serverless function for CORS issues
-    const proxiedPageUrls = pages.map(page => {
-      const path = dataSaver ? 'data-saver' : 'data';
-      return `/.netlify/functions/proxyImage?url=${encodeURIComponent(`${baseUrl}/${path}/${hash}/${page}`)}`;
-    });
+    // Prepare direct and proxied image URLs
+    const pageUrls = pages.map(p => 
+      `https://img.jumpplus.com/web/comic_image/${p.image.server}/${p.image.path}`
+    );
 
-    // Return the successful response with all the data the frontend needs
+    const proxiedPageUrls = pageUrls.map(url => 
+      `/.netlify/functions/proxyImage?url=${encodeURIComponent(url)}`
+    );
+
     return {
       statusCode: 200,
-      headers: { 
+      headers: {
         "Access-Control-Allow-Origin": "*",
         "Content-Type": "application/json",
-        "Cache-Control": "max-age=300" // Cache for 5 minutes
+        "Cache-Control": "max-age=300"
       },
       body: JSON.stringify({
-        baseUrl: baseUrl,
-        hash: hash,
-        pages: pages,
         pageUrls: pageUrls,
-        proxiedPageUrls: proxiedPageUrls, // Add proxied URLs as an alternative
-        totalPages: pages.length,
-        externalUrl: `https://mangadex.org/chapter/${id}`,
-        useProxy: true // Flag to indicate if proxy should be used by default
+        proxiedPageUrls: proxiedPageUrls,
+        totalPages: pageUrls.length,
+        externalUrl: `https://mangaplus.shueisha.co.jp/viewer/${id}`,
+        useProxy: false // Let frontend decide based on load
       })
     };
   } catch (error) {
-    console.error('Fetch chapter pages error:', error);
-    
-    // More detailed error response
+    console.error('Fetch chapter pages error (MangaPlus):', error);
+
     return {
-      statusCode: 200, // Still return 200 so frontend can handle the error gracefully
-      headers: { 
+      statusCode: 200, // Let frontend show a fallback even if it's an error
+      headers: {
         "Access-Control-Allow-Origin": "*",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
         error: "Failed to load chapter pages",
-        message: error.message || "Unknown error occurred",
-        externalUrl: `https://mangadex.org/chapter/${id}`,
+        message: error.message || "Unknown error",
+        externalUrl: `https://mangaplus.shueisha.co.jp/viewer/${id}`,
         errorDetails: {
           status: error.response?.status,
           statusText: error.response?.statusText,
