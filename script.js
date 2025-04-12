@@ -62,7 +62,6 @@ async function loadMangaDetails(mangaId) {
 
 function displayMangaDetails(data) {
   const manga = data.manga;
-  const volumes = data.volumes || {};
   const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0] || 'Unknown Title';
   const coverUrl = `/.netlify/functions/proxyImage?url=${encodeURIComponent(manga.coverUrl || '')}`;
   document.title = `${title} - Manga Viewer`;
@@ -82,42 +81,40 @@ function displayMangaDetails(data) {
     });
   }
 
-  displayChaptersList(volumes);
+  // Use MangaPlus for chapters
+  loadMangaPlusChapters(manga.id);
 }
 
-function displayChaptersList(volumes) {
+async function loadMangaPlusChapters(titleId) {
   try {
-    if (!volumes || Object.keys(volumes).length === 0) {
-      elements.chaptersList.innerHTML = '<div class="no-chapters">No chapters available.</div>';
+    const res = await fetch(`${API_BASE}/fetchMangaPlusChapters?id=${titleId}`);
+    if (!res.ok) throw new Error('Failed to fetch MangaPlus chapters');
+    const data = await res.json();
+    if (!data.chapters || data.chapters.length === 0) {
+      elements.chaptersList.innerHTML = `<div class="no-chapters">No chapters available.</div>`;
       return;
     }
 
-    const volumeKeys = Object.keys(volumes);
-    elements.chaptersList.innerHTML = volumeKeys.map(vol => `
-      <div class="volume-section">
-        <h4 class="volume-title">${vol === 'No Volume' ? 'Chapters' : `Volume ${vol}`}</h4>
-        <div class="volume-chapters">
-          ${volumes[vol].map(chapter => `
-            <div class="chapter-item">
-              <div class="chapter-info">
-                <a href="reader.html?manga=${mangaId}&chapter=${chapter.id}" class="chapter-link">
-                  <strong>${chapter.chapter === 'No Chapter' ? 'Oneshot' : `Chapter ${chapter.chapter}`}</strong>
-                  ${chapter.title ? `<span class="chapter-title">${chapter.title}</span>` : ''}
-                </a>
-                <div class="chapter-group">${chapter.groupName || ''}</div>
-              </div>
-              <div class="chapter-actions">
-                <a href="reader.html?manga=${mangaId}&chapter=${chapter.id}" class="btn read-btn">Read</a>
-                <a href="https://mangadex.org/chapter/${chapter.id}" target="_blank" class="btn md-btn">MD</a>
-              </div>
-            </div>
-          `).join('')}
-        </div>
+    const chaptersHtml = data.chapters.map(chap => `
+      <div class="chapter-item">
+        <a href="reader.html?manga=${titleId}&chapter=${chap.id}" class="chapter-link">
+          <div class="chapter-meta">
+            <strong>Chapter ${chap.number || ''}</strong>
+            ${chap.name ? `<span class="chapter-title">${chap.name}</span>` : ''}
+            <div class="chapter-date">${chap.date || ''}</div>
+          </div>
+        </a>
       </div>
     `).join('');
-  } catch (error) {
-    console.error('Error displaying chapters list:', error);
-    elements.chaptersList.innerHTML = `<div class="error-message">Failed to load chapters list: ${error.message}</div>`;
+
+    elements.chaptersList.innerHTML = `
+      <div class="mangaplus-chapter-list">
+        ${chaptersHtml}
+      </div>
+    `;
+  } catch (err) {
+    console.error('Error loading MangaPlus chapters:', err);
+    elements.chaptersList.innerHTML = `<div class="error-message">Failed to load MangaPlus chapters.</div>`;
   }
 }
 
