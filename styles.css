@@ -191,19 +191,28 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
   flex-wrap: wrap;
 }
 
+/* Fixed Image Cutoff */
 .manga-cover-large {
   width: 100%;
   max-width: 300px;
+  height: auto;
+  max-height: 450px;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
   background: #1a1a1a;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .manga-cover-large img {
-  width: 100%;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
   border-radius: var(--border-radius);
-  aspect-ratio: 3/4;
-  object-fit: cover;
 }
 
 .manga-info {
@@ -222,13 +231,15 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
   color: var(--text-light);
 }
 
+/* Enhanced Read More Functionality */
 .manga-description {
   margin: 15px 0;
   color: var(--text-light);
   position: relative;
-  max-height: 150px;
+  max-height: 4.5em; /* Show about 3 lines of text */
   overflow: hidden;
   transition: max-height 0.5s ease;
+  line-height: 1.5em;
 }
 
 .manga-description::after {
@@ -237,8 +248,8 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
   bottom: 0;
   left: 0;
   right: 0;
-  height: 40px;
-  background: linear-gradient(to bottom, transparent, var(--card-bg));
+  height: 1.5em;
+  background: linear-gradient(to bottom, transparent, var(--card-bg) 80%);
   opacity: 1;
   transition: opacity 0.3s ease;
 }
@@ -255,13 +266,15 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
   background: transparent;
   color: var(--primary);
   border: none;
-  padding: 5px 0;
+  padding: 8px 0;
   font-size: 0.9rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 5px;
-  margin-top: 5px;
+  margin-top: 8px;
+  width: 100%;
+  justify-content: flex-start;
 }
 
 .read-more-btn:hover {
@@ -270,6 +283,7 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
 
 .read-more-btn svg {
   transition: transform 0.3s ease;
+  margin-left: 5px;
 }
 
 .read-more-btn.expanded svg {
@@ -426,6 +440,11 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
     gap: 20px;
   }
 
+  .manga-cover-large {
+    max-height: 350px;
+    margin: 0 auto 20px;
+  }
+
   .volume-chapters {
     grid-template-columns: 1fr;
   }
@@ -453,14 +472,9 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
     overflow-x: hidden;
   }
 
-  .manga-cover-large {
-    max-width: 100%;
-    margin: 0 auto;
-  }
-
   .manga-info {
     min-width: 100%;
-    padding: 0 10px;
+    padding: 0;
   }
 
   .manga-info h2 {
@@ -468,7 +482,7 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
   }
 
   .manga-description {
-    max-height: 120px;
+    max-height: 4.5em;
   }
 
   .volume-section {
