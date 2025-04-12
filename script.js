@@ -81,13 +81,14 @@ function displayMangaDetails(data) {
     });
   }
 
-  // Use MangaPlus for chapters
-  loadMangaPlusChapters(manga.id);
+  // Use MangaPlus for chapters by title
+  const titleName = manga.attributes.title.en || Object.values(manga.attributes.title)[0];
+  loadMangaPlusChapters(titleName);
 }
 
-async function loadMangaPlusChapters(titleId) {
+async function loadMangaPlusChapters(title) {
   try {
-    const res = await fetch(`${API_BASE}/fetchMangaPlusChapters?id=${titleId}`);
+    const res = await fetch(`${API_BASE}/fetchMangaPlusChapters?title=${encodeURIComponent(title)}`);
     if (!res.ok) throw new Error('Failed to fetch MangaPlus chapters');
     const data = await res.json();
     if (!data.chapters || data.chapters.length === 0) {
@@ -97,7 +98,7 @@ async function loadMangaPlusChapters(titleId) {
 
     const chaptersHtml = data.chapters.map(chap => `
       <div class="chapter-item">
-        <a href="reader.html?manga=${titleId}&chapter=${chap.id}" class="chapter-link">
+        <a href="reader.html?manga=${chap.titleId}&chapter=${chap.id}" class="chapter-link">
           <div class="chapter-meta">
             <strong>Chapter ${chap.number || ''}</strong>
             ${chap.name ? `<span class="chapter-title">${chap.name}</span>` : ''}
