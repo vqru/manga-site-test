@@ -17,52 +17,26 @@
     </header>
 
     <main>
-      <!-- Manga List View -->
-      <div id="homepage">
-        <section class="hero-carousel">
-          <h2>Popular New Titles</h2>
-          <div class="carousel-wrapper" id="popular-carousel">
-            <!-- Dynamically injected popular manga cards -->
-          </div>
-        </section>
+      <!-- Scroll Sections -->
+      <section class="manga-row">
+        <h2>Most Popular</h2>
+        <div class="scroll-container" id="popular-list"></div>
+      </section>
 
-        <section class="latest-updates">
-          <h2>Latest Updates</h2>
-          <div class="updates-list" id="latest-updates">
-            <!-- Dynamically injected update entries -->
-          </div>
-        </section>
+      <section class="manga-row">
+        <h2>Recently Updated</h2>
+        <div class="scroll-container" id="recent-list"></div>
+      </section>
 
-        <section class="top-manga">
-          <h2>Top Manga Today</h2>
-          <div class="top-scroll" id="top-manga-list">
-            <!-- Dynamically injected top manga cards -->
-          </div>
-        </section>
-      </div>
+      <section class="manga-row">
+        <h2>Top Rated</h2>
+        <div class="scroll-container" id="toprated-list"></div>
+      </section>
 
-      <!-- Manga Details View -->
-      <div id="manga-details" class="hidden">
-        <a href="#" id="back-to-search" class="back-btn">← Back to Search</a>
-        
-        <div class="manga-header">
-          <div id="manga-cover" class="manga-cover"></div>
-          <div class="manga-info">
-            <h2 id="manga-title"></h2>
-            <div id="manga-metadata">
-              <p id="manga-authors"></p>
-              <p id="manga-status"></p>
-              <p id="manga-demographic"></p>
-            </div>
-            <div id="manga-description" class="manga-description"></div>
-          </div>
-        </div>
-        
-        <div class="manga-chapters">
-          <h3>Chapters</h3>
-          <div id="chapters-list" class="chapters-list"></div>
-        </div>
-      </div>
+      <section class="manga-row">
+        <h2>New Releases</h2>
+        <div class="scroll-container" id="new-list"></div>
+      </section>
     </main>
 
     <footer>
@@ -70,6 +44,6 @@
     </footer>
   </div>
 
-  <script src="index.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
