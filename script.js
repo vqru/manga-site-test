@@ -30,18 +30,24 @@ const urlParams = new URLSearchParams(window.location.search);
 const mangaId = urlParams.get('manga');
 const chapterId = urlParams.get('chapter');
 
-// Initialize page based on URL parameters
-window.addEventListener('DOMContentLoaded', async () => {
+// HOMEPAGE: Load categorized manga sections
+window.addEventListener('DOMContentLoaded', () => {
+  if (document.getElementById('popular-list')) {
+    loadSection('popular-list', 'followedCount');
+    loadSection('recent-list', 'latestUploadedChapter');
+    loadSection('toprated-list', 'rating');
+    loadSection('new-list', 'createdAt');
+  }
+
+  // If chapter or manga ID is present, load details
   try {
     if (chapterId) {
       if (elements.mdFallback) elements.mdFallback.style.display = 'none';
-      await loadChapterPages(chapterId);
+      loadChapterPages(chapterId);
       setupPagination();
       elements.backBtn.href = mangaId ? `details.html?manga=${mangaId}` : 'index.html';
     } else if (mangaId) {
-      await loadMangaDetails(mangaId);
-    } else {
-      await loadHomepageSections();
+      loadMangaDetails(mangaId);
     }
   } catch (error) {
     console.error('Initialization error:', error);
@@ -49,121 +55,46 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
-// -------------------------
-// HOMEPAGE SECTION LOADERS
-// -------------------------
-
-async function loadHomepageSections() {
+// ---- HOMEPAGE SECTION LOGIC ----
+async function loadSection(containerId, sortKey) {
   try {
-    await Promise.all([
-      loadPopularManga(),
-      loadLatestUpdates(),
-      loadTopManga()
-    ]);
-  } catch (err) {
-    console.error('Homepage load error:', err);
+    const res = await fetch(`${API_BASE}/fetchMangaList?sort=${sortKey}`);
+    const json = await res.json();
+    const container = document.getElementById(containerId);
+    if (!json.data || !Array.isArray(json.data)) return;
+
+    json.data.forEach(manga => {
+      const card = createMangaCard(manga);
+      container.appendChild(card);
+    });
+  } catch (error) {
+    console.error(`Failed to load section ${containerId}:`, error);
   }
 }
 
-async function loadPopularManga() {
-  const res = await fetch('https://api.mangadex.org/manga?limit=10&order[followedCount]=desc&includes[]=cover_art&includes[]=author');
-  const data = await res.json();
-  const container = document.getElementById('popular-carousel');
-  if (!container) return;
+function createMangaCard(manga) {
+  const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0] || 'No Title';
+  const coverUrl = manga.coverUrl
+    ? `/.netlify/functions/proxyImage?url=${encodeURIComponent(manga.coverUrl)}`
+    : 'placeholder.jpg';
 
-  container.innerHTML = data.data.map(manga => {
-    const title = manga.attributes.title.en || 'Untitled';
-    const author = manga.relationships.find(r => r.type === 'author')?.attributes?.name || 'Unknown';
-    const cover = manga.relationships.find(r => r.type === 'cover_art')?.attributes?.fileName;
-    const id = manga.id;
-    const imgUrl = `https://uploads.mangadex.org/covers/${id}/${cover}.256.jpg`;
+  const card = document.createElement('div');
+  card.className = 'manga-card';
+  card.innerHTML = `
+    <div class="cover-wrap">
+      <img src="${coverUrl}" alt="${title}" loading="lazy" onerror="this.src='placeholder.jpg'">
+    </div>
+    <p class="title">${title}</p>
+  `;
 
-    return `
-      <div class="carousel-card" onclick="window.location.href='details.html?manga=${id}'">
-        <img src="${imgUrl}" alt="${title}">
-        <div class="carousel-info">
-          <h3>${title}</h3>
-          <p>${author}</p>
-        </div>
-      </div>
-    `;
-  }).join('');
+  card.addEventListener('click', () => {
+    window.location.href = `details.html?manga=${manga.id}`;
+  });
+
+  return card;
 }
 
-async function loadLatestUpdates() {
-  const res = await fetch('https://api.mangadex.org/chapter?limit=12&order[readableAt]=desc&includes[]=manga&includes[]=scanlation_group');
-  const data = await res.json();
-  const container = document.getElementById('latest-updates');
-  if (!container) return;
-
-  container.innerHTML = data.data.map(chap => {
-    const title = chap.attributes.title || '';
-    const chapNum = chap.attributes.chapter || 'Oneshot';
-    const volNum = chap.attributes.volume ? `Vol. ${chap.attributes.volume}` : '';
-    const manga = chap.relationships.find(r => r.type === 'manga');
-    const scanGroup = chap.relationships.find(r => r.type === 'scanlation_group');
-    const scanName = scanGroup?.attributes?.name || '';
-    const mangaTitle = manga?.attributes?.title?.en || 'Unknown';
-    const mangaId = manga?.id;
-    const time = new Date(chap.attributes.readableAt);
-    const timeAgo = getTimeAgo(time);
-
-    return `
-      <div class="update-entry" onclick="window.location.href='details.html?manga=${mangaId}'">
-        <div class="update-thumb"></div>
-        <div class="update-info">
-          <h4>${mangaTitle}</h4>
-          <p>${volNum} Ch. ${chapNum} – ${title}</p>
-          <small>${scanName} • ${timeAgo}</small>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-async function loadTopManga() {
-  const res = await fetch('https://api.mangadex.org/manga?limit=10&order[rating]=desc&includes[]=cover_art');
-  const data = await res.json();
-  const container = document.getElementById('top-manga-list');
-  if (!container) return;
-
-  container.innerHTML = data.data.map((manga, i) => {
-    const title = manga.attributes.title.en || 'Untitled';
-    const cover = manga.relationships.find(r => r.type === 'cover_art')?.attributes?.fileName;
-    const id = manga.id;
-    const imgUrl = `https://uploads.mangadex.org/covers/${id}/${cover}.256.jpg`;
-
-    return `
-      <div class="top-manga-card" onclick="window.location.href='details.html?manga=${id}'">
-        <span class="rank-badge">#${i + 1}</span>
-        <img src="${imgUrl}" alt="${title}">
-        <p>${title}</p>
-      </div>
-    `;
-  }).join('');
-}
-
-function getTimeAgo(date) {
-  const seconds = Math.floor((new Date() - date) / 1000);
-  const units = [
-    { label: 'y', seconds: 31536000 },
-    { label: 'mo', seconds: 2592000 },
-    { label: 'd', seconds: 86400 },
-    { label: 'h', seconds: 3600 },
-    { label: 'm', seconds: 60 },
-    { label: 's', seconds: 1 }
-  ];
-  for (const unit of units) {
-    const value = Math.floor(seconds / unit.seconds);
-    if (value >= 1) return `${value}${unit.label}`;
-  }
-  return 'just now';
-}
-
-// -------------------------
-// DETAILS / READER LOGIC
-// -------------------------
-
+// ---- DETAILS PAGE / READER LOGIC ----
 async function loadMangaDetails(mangaId) {
   try {
     const response = await fetch(`${API_BASE}/fetchMangaDetails?id=${mangaId}`);
