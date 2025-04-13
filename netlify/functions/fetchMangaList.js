@@ -1,15 +1,24 @@
 const axios = require('axios');
 
 exports.handler = async (event) => {
-  const { query = 'popular', page = 1 } = event.queryStringParameters;
-  const apiUrl = `https://api.mangadex.org/manga?title=${query}&limit=20&includes[]=cover_art&order[followedCount]=desc&offset=${(page - 1) * 20}`;
+  const {
+    query = '',
+    page = 1,
+    sort = 'followedCount'
+  } = event.queryStringParameters;
+
+  const offset = (page - 1) * 20;
+
+  const apiUrl = `https://api.mangadex.org/manga?limit=20&includes[]=cover_art&title=${encodeURIComponent(query)}&offset=${offset}&order[${sort}]=desc`;
 
   try {
     const response = await axios.get(apiUrl, {
-      timeout: 8000 // Increased timeout to 8 seconds
+      timeout: 8000 // 8-second timeout
     });
-    
-    if (!response.data.data) {
+
+    const mangaList = response.data.data;
+
+    if (!mangaList || !Array.isArray(mangaList)) {
       return {
         statusCode: 200,
         headers: { 'Access-Control-Allow-Origin': '*' },
@@ -17,22 +26,15 @@ exports.handler = async (event) => {
       };
     }
 
-    // Process manga data to include cover URLs directly in the response
-    const processedData = response.data.data.map(manga => {
-      // Find cover art relationship
+    const processedData = mangaList.map(manga => {
       const coverArt = manga.relationships.find(rel => rel.type === 'cover_art');
-      let coverFileName = null;
-      
-      if (coverArt && coverArt.attributes && coverArt.attributes.fileName) {
-        coverFileName = coverArt.attributes.fileName;
-      }
-      
-      // Add coverUrl directly to manga object
+      const coverFile = coverArt?.attributes?.fileName;
+
       return {
         ...manga,
-        coverUrl: coverFileName ? 
-          `https://uploads.mangadex.org/covers/${manga.id}/${coverFileName}.256.jpg` : 
-          null
+        coverUrl: coverFile
+          ? `https://uploads.mangadex.org/covers/${manga.id}/${coverFile}.256.jpg`
+          : null
       };
     });
 
@@ -44,15 +46,14 @@ exports.handler = async (event) => {
         total: response.data.total || 0
       })
     };
-    
   } catch (error) {
-    console.error('Fetch manga list error:', error);
+    console.error('Error fetching manga list:', error.message);
     return {
       statusCode: 500,
       headers: { 'Access-Control-Allow-Origin': '*' },
-      body: JSON.stringify({ 
-        error: error.message,
-        suggestion: "Try again later or search for different terms"
+      body: JSON.stringify({
+        error: 'Failed to fetch manga list',
+        details: error.message
       })
     };
   }
