@@ -6,21 +6,21 @@
   <title>Manga Reader</title>
   <link rel="stylesheet" href="styles.css">
   <style>
-    /* Additional reader-specific styles */
+    /* Your existing reader-specific styles (unchanged) */
     .chapter-title {
       text-align: center;
       margin: 10px 0;
       padding: 0 15px;
       word-break: break-word;
     }
-    
+
     .manga-page {
       max-width: 100%;
       display: block;
       margin: 0 auto;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    
+
     .page-nav {
       display: flex;
       justify-content: space-between;
@@ -34,7 +34,7 @@
       box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
       z-index: 100;
     }
-    
+
     .page-nav button {
       padding: 10px 20px;
       border: none;
@@ -45,23 +45,24 @@
       font-size: 16px;
       transition: background 0.2s;
     }
-    
+
     .page-nav button:hover {
       background: #3c58b3;
     }
-    
+
     .page-nav button:disabled {
       background: #cccccc;
       cursor: not-allowed;
     }
-    
+
     .md-fallback {
       margin: 20px 0;
       text-align: center;
-      display: none; /* Hidden by default, shown when needed */
+      display: none;
     }
-    
-    .md-fallback a {
+
+    .md-fallback a,
+    .md-fallback button {
       display: inline-block;
       padding: 12px 25px;
       background: #ff6b6b;
@@ -70,31 +71,34 @@
       border-radius: 4px;
       font-weight: bold;
       transition: background 0.2s;
+      margin: 8px;
+      cursor: pointer;
     }
-    
-    .md-fallback a:hover {
+
+    .md-fallback a:hover,
+    .md-fallback button:hover {
       background: #ff5252;
     }
-    
+
     .loading {
       text-align: center;
       padding: 50px;
       font-size: 18px;
       color: #666;
     }
-    
+
     .loading:after {
       content: "";
       animation: dots 1.5s infinite;
     }
-    
+
     @keyframes dots {
       0%, 20% { content: ""; }
       40% { content: "."; }
       60% { content: ".."; }
       80%, 100% { content: "..."; }
     }
-    
+
     .error-state {
       text-align: center;
       padding: 30px;
@@ -103,7 +107,7 @@
       margin: 20px;
       background-color: #fff8f8;
     }
-    
+
     .error-state a {
       display: inline-block;
       margin: 10px;
@@ -128,7 +132,7 @@
       border-radius: 4px;
       text-align: center;
     }
-    
+
     .back-btn {
       display: inline-block;
       padding: 8px 15px;
@@ -138,26 +142,36 @@
       border-radius: 4px;
       transition: background 0.2s;
     }
-    
+
     .back-btn:hover {
       background: #edf2ff;
     }
-    
+
     .reader-header {
       padding: 15px;
       border-bottom: 1px solid #eee;
     }
-    
+
     /* Preloader for smoother experience */
     .preload-container {
       display: none;
     }
-    
+
     @media (max-width: 768px) {
       .page-nav button {
         padding: 8px 15px;
         font-size: 14px;
       }
+    }
+
+    /* Vertical reader override */
+    .vertical-reader img {
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      object-fit: contain;
+      display: block;
     }
   </style>
 </head>
@@ -167,26 +181,34 @@
       <a href="#" id="back-btn" class="back-btn">← Back to Manga</a>
       <!-- chapter-title will be inserted here by JavaScript -->
     </div>
-    
+
+    <!-- Vertical mode toggle button (shown if MD loads fine) -->
+    <div style="text-align: center; margin: 15px 0;">
+      <button id="vertical-toggle" class="read-btn" style="display: none;">
+        Read in Vertical Mode (via MangaPark)
+      </button>
+    </div>
+
     <div id="chapter-pages" class="chapter-content">
       <div class="loading">Loading manga pages</div>
     </div>
-    
+
     <div class="page-nav">
       <button id="prev-page">Previous Page</button>
       <span id="page-indicator">Page 1</span>
       <button id="next-page">Next Page</button>
     </div>
-    
+
     <div class="md-fallback">
       <p>Having trouble viewing the manga?</p>
       <a id="md-link" target="_blank">Read on MangaDex</a>
+      <br />
+      <button id="fallback-mangapark">Read on MangaPark (Vertical Mode)</button>
     </div>
-    
-    <!-- Hidden preloader for next page -->
+
     <div class="preload-container"></div>
   </div>
-  
+
   <script src="script.js"></script>
 </body>
 </html>
