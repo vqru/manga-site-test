@@ -7,7 +7,7 @@
     "netlify-lambda": "^2.0.15"
   },
   "scripts": {
-    "start": "netlify-lambda serve lambda",
-    "build": "netlify-lambda build lambda"
+    "start": "netlify-lambda serve functions",
+    "build": "netlify-lambda build functions"
   }
 }
