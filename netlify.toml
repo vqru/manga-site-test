@@ -1,8 +1,7 @@
 [build]
-  functions = "built-functions"
+  functions = "functions"
 
 [functions]
-  directory = "lambda"
   node_bundler = "esbuild"
   included_files = []
   external_node_modules = ["axios"]
