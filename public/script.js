@@ -3,9 +3,6 @@ const API_BASE = '/.netlify/functions';
 let currentPage = 1;
 let loadAttempts = {};
 let useProxyByDefault = true;
-let isVerticalMode = false;
-let mangaParkImages = [];
-let mangaParkSource = '';
 
 // DOM Elements
 const elements = {
@@ -25,12 +22,15 @@ const elements = {
   mangaAuthors: document.getElementById('manga-authors'),
   mangaStatus: document.getElementById('manga-status'),
   mangaDemographic: document.getElementById('manga-demographic'),
-  mangaDescription: document.getElementById('manga-description'),
-  verticalToggle: document.getElementById('vertical-toggle'),
-  fallbackMangaPark: document.getElementById('fallback-mangapark')
+  mangaDescription: document.getElementById('manga-description')
 };
 
-// Initialize the page
+// Get URL parameters
+const urlParams = new URLSearchParams(window.location.search);
+const mangaId = urlParams.get('manga');
+const chapterId = urlParams.get('chapter');
+
+// HOMEPAGE: Load categorized manga sections
 window.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('popular-list')) {
     loadSection('popular-list', 'followedCount');
@@ -39,16 +39,12 @@ window.addEventListener('DOMContentLoaded', () => {
     loadSection('new-list', 'createdAt');
   }
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const mangaId = urlParams.get('manga');
-  const chapterId = urlParams.get('chapter');
-
+  // If chapter or manga ID is present, load details
   try {
     if (chapterId) {
       if (elements.mdFallback) elements.mdFallback.style.display = 'none';
       loadChapterPages(chapterId);
       setupPagination();
-      setupReaderControls();
       elements.backBtn.href = mangaId ? `details.html?manga=${mangaId}` : 'index.html';
     } else if (mangaId) {
       loadMangaDetails(mangaId);
@@ -173,7 +169,6 @@ function displayChaptersList(volumes) {
   }
 }
 
-// ---- READER FUNCTIONS ----
 async function loadChapterPages(chapterId) {
   try {
     const loadingElement = document.createElement('div');
@@ -212,9 +207,11 @@ async function loadChapterPages(chapterId) {
     displayPage(1);
     elements.pageIndicator.textContent = `Page 1 / ${pagesData.pageUrls.length}`;
 
-    if (elements.verticalToggle) {
-      elements.verticalToggle.style.display = 'inline-block';
-    }
+    const reloadBtn = document.createElement('button');
+    reloadBtn.textContent = 'Reload Chapter';
+    reloadBtn.className = 'reload-btn';
+    reloadBtn.onclick = () => loadChapterPages(chapterId);
+    elements.chapterPages.parentNode.appendChild(reloadBtn);
   } catch (error) {
     console.error('Failed to load chapter:', error);
     showError(`Failed to load chapter: ${error.message}`);
@@ -228,11 +225,6 @@ function displayPage(pageNum) {
 
     currentPage = pageNum;
     elements.chapterPages.innerHTML = '';
-
-    if (isVerticalMode && mangaParkImages.length > 0) {
-      displayVerticalPages();
-      return;
-    }
 
     const loadingDiv = document.createElement('div');
     loadingDiv.className = 'loading';
@@ -249,7 +241,7 @@ function displayPage(pageNum) {
         elements.chapterPages.innerHTML = '';
         img.className = 'manga-page';
         elements.chapterPages.appendChild(img);
-        updatePageIndicator(pageNum);
+        elements.pageIndicator.textContent = `Page ${pageNum} / ${window.totalPages}`;
       }
     };
 
@@ -264,70 +256,16 @@ function displayPage(pageNum) {
     img.src = initialUrl;
     img.alt = `Page ${pageNum}`;
 
-    updateNavigation(pageNum);
-    updateHistory(pageNum);
+    elements.prevPageBtn.disabled = pageNum <= 1;
+    elements.nextPageBtn.disabled = pageNum >= window.chapterPages.length;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('page', pageNum);
+    window.history.replaceState({}, '', url);
   } catch (error) {
     console.error('Error displaying page:', error);
     showError(`Failed to display page ${pageNum}: ${error.message}`);
   }
-}
-
-function displayVerticalPages() {
-  elements.chapterPages.innerHTML = '';
-  elements.chapterPages.classList.add('vertical-reader');
-  
-  mangaParkImages.forEach((imgUrl, index) => {
-    const imgContainer = document.createElement('div');
-    imgContainer.className = 'vertical-page';
-    
-    const img = new Image();
-    img.src = imgUrl;
-    img.alt = `Page ${index + 1}`;
-    img.className = 'manga-page';
-    img.loading = 'lazy';
-    img.onerror = () => img.src = 'placeholder.jpg';
-    
-    const pageNum = document.createElement('div');
-    pageNum.className = 'page-number';
-    pageNum.textContent = `Page ${index + 1}`;
-    
-    imgContainer.appendChild(img);
-    imgContainer.appendChild(pageNum);
-    elements.chapterPages.appendChild(imgContainer);
-  });
-
-  updatePageIndicator(currentPage);
-  updateNavigation(currentPage);
-  preloadAdjacentImages();
-}
-
-function preloadAdjacentImages() {
-  const preloadRange = 2;
-  for (let i = Math.max(0, currentPage - preloadRange); 
-       i < Math.min(mangaParkImages.length, currentPage + preloadRange); 
-       i++) {
-    if (i !== currentPage - 1) {
-      const img = new Image();
-      img.src = mangaParkImages[i];
-    }
-  }
-}
-
-function updatePageIndicator(pageNum) {
-  const total = isVerticalMode ? mangaParkImages.length : window.totalPages;
-  elements.pageIndicator.textContent = `Page ${pageNum} / ${total}`;
-}
-
-function updateNavigation(pageNum) {
-  const total = isVerticalMode ? mangaParkImages.length : window.totalPages;
-  elements.prevPageBtn.disabled = pageNum <= 1;
-  elements.nextPageBtn.disabled = pageNum >= total;
-}
-
-function updateHistory(pageNum) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('page', pageNum);
-  window.history.replaceState({}, '', url);
 }
 
 function tryDirectUrl(pageNum) {
@@ -359,109 +297,26 @@ function showPageError(pageNum) {
   const errorDiv = document.createElement('div');
   errorDiv.className = 'error-state';
   errorDiv.innerHTML = `
-    <p>Failed to load page ${pageNum}</p>
-    <p class="error-detail">This might be due to CORS restrictions or API changes</p>
+    <p>Failed to load page ${pageNum}. This might be due to CORS restrictions or API changes.</p>
     <div class="error-actions">
-      <button onclick="retryPage(${pageNum})" class="action-btn retry-btn">
-        Retry Page
-      </button>
-      <button onclick="toggleLoadingMethod()" class="action-btn method-btn">
-        Try Different Method
-      </button>
-      ${elements.mdLink?.href ? `
-        <a href="${elements.mdLink.href}" target="_blank" class="action-btn md-btn">
-          Open MangaDex
-        </a>
-      ` : ''}
+      <button onclick="retryPage(${pageNum})">Retry Page</button>
+      <button onclick="toggleLoadingMethod()">Try Different Method</button>
+      <a href="${elements.mdLink.href}" target="_blank" class="md-button">Read on MangaDex</a>
     </div>
   `;
   elements.chapterPages.appendChild(errorDiv);
+  if (elements.mdFallback) elements.mdFallback.style.display = 'block';
 }
 
-function setupReaderControls() {
-  if (elements.verticalToggle) {
-    elements.verticalToggle.addEventListener('click', toggleVerticalMode);
-  }
+window.toggleLoadingMethod = () => {
+  useProxyByDefault = !useProxyByDefault;
+  displayPage(currentPage);
+};
 
-  if (elements.fallbackMangaPark) {
-    elements.fallbackMangaPark.addEventListener('click', loadMangaParkChapter);
-  }
-
-  setupPagination();
-}
-
-function toggleVerticalMode() {
-  isVerticalMode = !isVerticalMode;
-  elements.verticalToggle.classList.toggle('active');
-  
-  if (isVerticalMode && mangaParkImages.length === 0) {
-    loadMangaParkChapter();
-  } else {
-    displayPage(currentPage);
-  }
-}
-
-async function loadMangaParkChapter() {
-  try {
-    const loadingElement = document.createElement('div');
-    loadingElement.className = 'loading-state';
-    loadingElement.innerHTML = `
-      <div class="spinner"></div>
-      <p>Loading from MangaPark...</p>
-    `;
-    elements.chapterPages.innerHTML = '';
-    elements.chapterPages.appendChild(loadingElement);
-
-    const mangaTitle = document.querySelector('.chapter-title')?.textContent || '';
-    const chapterMatch = mangaTitle.match(/(Chapter|Ch\.)\s?(\d+)/i);
-    const chapterNum = chapterMatch ? chapterMatch[2] : '1';
-    const cleanTitle = mangaTitle.replace(/(Chapter|Ch\.)\s?\d+/i, '').trim();
-
-    const response = await fetch(
-      `${API_BASE}/fetchMangaParkChapter?title=${encodeURIComponent(cleanTitle)}&chapter=${chapterNum}`,
-      { signal: AbortSignal.timeout(20000) }
-    );
-    
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    
-    const data = await response.json();
-    if (!data?.images?.length) throw new Error(data?.error || 'No images found');
-
-    mangaParkImages = data.images;
-    mangaParkSource = data.source || 'https://mangapark.net';
-    isVerticalMode = true;
-    
-    if (elements.verticalToggle) {
-      elements.verticalToggle.classList.add('active');
-      elements.verticalToggle.textContent = 'Exit Vertical Mode';
-    }
-    
-    if (elements.mdLink) {
-      elements.mdLink.href = mangaParkSource;
-      elements.mdLink.textContent = 'Open on MangaPark';
-    }
-    
-    displayVerticalPages();
-    showToast('Switched to MangaPark successfully');
-  } catch (error) {
-    console.error('MangaPark fallback failed:', error);
-    
-    elements.chapterPages.innerHTML = `
-      <div class="error-state">
-        <h3>⚠️ MangaPark Unavailable</h3>
-        <p class="error-detail">${error.message || 'Service temporarily unavailable'}</p>
-        <div class="error-actions">
-          <button onclick="retryMangaPark()" class="action-btn retry-btn">
-            Try Again
-          </button>
-          <button onclick="location.reload()" class="action-btn reload-btn">
-            Return to Original
-          </button>
-        </div>
-      </div>
-    `;
-  }
-}
+window.retryPage = (pageNum) => {
+  loadAttempts[pageNum] = 0;
+  displayPage(pageNum);
+};
 
 function setupPagination() {
   elements.prevPageBtn.addEventListener('click', () => {
@@ -469,8 +324,7 @@ function setupPagination() {
   });
 
   elements.nextPageBtn.addEventListener('click', () => {
-    const total = isVerticalMode ? mangaParkImages.length : window.totalPages;
-    if (currentPage < total) displayPage(currentPage + 1);
+    if (currentPage < window.chapterPages.length) displayPage(currentPage + 1);
   });
 
   document.addEventListener('keydown', (e) => {
@@ -494,30 +348,20 @@ function setupPagination() {
 function showError(message) {
   const errorDiv = document.createElement('div');
   errorDiv.className = 'error-message';
-  errorDiv.innerHTML = `
-    <p>${message}</p>
-    <button onclick="location.reload()" class="action-btn retry-btn">
-      Reload Page
-    </button>
-  `;
+  errorDiv.textContent = message;
+  const retryBtn = document.createElement('button');
+  retryBtn.textContent = 'Retry Loading';
+  retryBtn.className = 'retry-btn';
+  retryBtn.onclick = () => location.reload();
+  errorDiv.appendChild(retryBtn);
 
   if (elements.chapterPages && elements.chapterPages.innerHTML === '') {
     elements.chapterPages.appendChild(errorDiv);
   } else {
     document.body.insertBefore(errorDiv, document.body.firstChild);
   }
-}
 
-function showToast(message) {
-  const toast = document.createElement('div');
-  toast.className = 'toast-message';
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  
-  setTimeout(() => {
-    toast.classList.add('fade-out');
-    setTimeout(() => toast.remove(), 500);
-  }, 3000);
+  if (elements.mdFallback) elements.mdFallback.style.display = 'block';
 }
 
 // Volume section collapse/expand
@@ -529,14 +373,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
-
-// Global functions
-window.retryMangaPark = loadMangaParkChapter;
-window.toggleLoadingMethod = () => {
-  useProxyByDefault = !useProxyByDefault;
-  displayPage(currentPage);
-};
-window.retryPage = (pageNum) => {
-  loadAttempts[pageNum] = 0;
-  displayPage(pageNum);
-};
