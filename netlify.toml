@@ -1,9 +1,8 @@
 [build]
-  command = "npm run build"
-  functions = "built-functions"
   publish = "public"
 
 [functions]
+  directory = "netlify/functions"
   node_bundler = "esbuild"
   included_files = []
   external_node_modules = ["axios"]
