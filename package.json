@@ -8,6 +8,6 @@
   },
   "scripts": {
     "start": "netlify-lambda serve functions",
-    "build": "netlify-lambda build functions -o built-functions"
+    "build": "netlify-lambda build functions built-functions"
   }
 }
