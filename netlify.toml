@@ -1,5 +1,5 @@
 [build]
-  functions = "functions"
+  functions = "built-functions" # This is where the built functions will go
 
 [functions]
   node_bundler = "esbuild"
