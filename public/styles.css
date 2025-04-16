@@ -517,3 +517,156 @@ button:active, .read-btn:active, .md-btn:active, #search-btn:active, .page-btn:a
 .scroll-container .manga-card:hover img {
   transform: scale(1.05);
 }
+
+/* === READER STYLES === */
+.chapter-title {
+  text-align: center;
+  margin: 10px 0;
+  padding: 0 15px;
+  word-break: break-word;
+}
+
+.manga-page {
+  max-width: 100%;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.page-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background: #f5f5f5;
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  z-index: 100;
+}
+
+.page-nav button {
+  padding: 10px 20px;
+  border: none;
+  background: #4a69bd;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.2s;
+}
+
+.page-nav button:hover {
+  background: #3c58b3;
+}
+
+.page-nav button:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+.md-fallback {
+  margin: 20px 0;
+  text-align: center;
+  display: none;
+}
+
+.md-fallback a {
+  display: inline-block;
+  padding: 12px 25px;
+  background: #ff6b6b;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.md-fallback a:hover {
+  background: #ff5252;
+}
+
+.loading {
+  text-align: center;
+  padding: 50px;
+  font-size: 18px;
+  color: #666;
+}
+
+.loading:after {
+  content: "";
+  animation: dots 1.5s infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: ""; }
+  40% { content: "."; }
+  60% { content: ".."; }
+  80%, 100% { content: "..."; }
+}
+
+.error-state {
+  text-align: center;
+  padding: 30px;
+  border: 1px solid #ff6b6b;
+  border-radius: 8px;
+  margin: 20px;
+  background-color: #fff8f8;
+}
+
+.error-state a {
+  display: inline-block;
+  margin: 10px;
+  padding: 8px 16px;
+  background: #4a69bd;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.error-state a:hover {
+  background: #3c58b3;
+}
+
+.error-message {
+  background-color: #fff8f8;
+  border: 1px solid #ff6b6b;
+  color: #d63031;
+  padding: 15px;
+  margin: 15px 0;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.back-btn {
+  display: inline-block;
+  padding: 8px 15px;
+  color: #4a69bd;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.back-btn:hover {
+  background: #edf2ff;
+}
+
+.reader-header {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.preload-container {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .page-nav button {
+    padding: 8px 15px;
+    font-size: 14px;
+  }
+}
