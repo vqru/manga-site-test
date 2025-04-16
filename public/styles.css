@@ -735,6 +735,11 @@ button:active, .read-btn:active, .md-btn:active,
   50% { transform: translateY(-20px) rotate(5deg); }
 }
 
+/* ===== UTILITY CLASSES ===== */
+.hidden {
+  display: none;
+}
+
 /* ===== RESPONSIVE ADJUSTMENTS ===== */
 @media (max-width: 768px) {
   header h1 {
