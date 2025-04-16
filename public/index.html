@@ -4,17 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manga Viewer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>Manga Viewer</h1>
-      <div class="search-container">
+    <!-- Minimal Search Icon (replaces header) -->
+    <div class="search-icon-container">
+      <button id="search-toggle" aria-label="Search">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--neon)" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+      </button>
+      <div class="search-box hidden">
         <input type="text" id="search" placeholder="Search manga...">
-        <button id="search-btn">Search</button>
       </div>
-    </header>
+    </div>
 
     <main>
       <!-- Scroll Sections -->
@@ -43,6 +49,11 @@
       <p>Data provided by <a href="https://mangadex.org" target="_blank">MangaDex API</a>.</p>
     </footer>
   </div>
+
+  <!-- Manga SFX Elements -->
+  <div class="manga-sfx" style="top:15%;left:5%">ゴゴゴ</div>
+  <div class="manga-sfx" style="bottom:20%;right:5%">ドン</div>
+  <div class="manga-sfx" style="top:50%;left:70%">ザワ</div>
 
   <script src="script.js"></script>
 </body>
