@@ -53,8 +53,60 @@ window.addEventListener('DOMContentLoaded', () => {
     console.error('Initialization error:', error);
     showError(`Failed to initialize page: ${error.message}`);
   }
-  document.getElementById('search-btn').addEventListener('click', () => {
-  document.getElementById('search-modal').classList.toggle('hidden');
+  // ===== SEARCH FUNCTIONALITY =====
+document.getElementById('search-icon-btn')?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const modal = document.getElementById('search-modal');
+  modal.classList.toggle('hidden');
+  if (!modal.classList.contains('hidden')) {
+    document.getElementById('search-input').focus();
+  }
+});
+
+// Close modal when clicking outside
+document.addEventListener('click', (e) => {
+  const modal = document.getElementById('search-modal');
+  if (!modal.classList.contains('hidden') && 
+      !e.target.closest('#search-modal') && 
+      !e.target.closest('#search-icon-btn')) {
+    modal.classList.add('hidden');
+  }
+});
+
+// Add keyboard support
+document.addEventListener('keydown', (e) => {
+  const modal = document.getElementById('search-modal');
+  if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+    modal.classList.add('hidden');
+  }
+});
+
+// Basic search implementation (expand with your API calls)
+document.getElementById('search-input')?.addEventListener('input', async (e) => {
+  const query = e.target.value.trim();
+  const resultsContainer = document.getElementById('search-results');
+  
+  if (query.length < 2) {
+    resultsContainer.innerHTML = '';
+    return;
+  }
+
+  try {
+    // Replace with your actual search API call
+    const response = await fetch(`${API_BASE}/searchManga?query=${encodeURIComponent(query)}`);
+    const data = await response.json();
+    
+    resultsContainer.innerHTML = data.map(manga => `
+      <div class="search-result-item">
+        <img src="${manga.coverUrl || 'placeholder.jpg'}" alt="${manga.title}">
+        <span>${manga.title}</span>
+      </div>
+    `).join('') || '<div class="no-results">No results found</div>';
+    
+  } catch (error) {
+    resultsContainer.innerHTML = '<div class="error">Search failed</div>';
+    console.error('Search error:', error);
+  }
 });
 
 // ---- HOMEPAGE SECTION LOGIC ----
