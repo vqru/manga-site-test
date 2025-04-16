@@ -170,6 +170,31 @@ button:active, .read-btn:active, .md-btn:active,
   margin-top: -8px;
   margin-right: -8px;
 }
+/* ===== FLOATING SEARCH BUTTON ===== */
+.floating-search-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background-color: var(--secondary); /* Replaced #0a0a0a with theme var */
+  border: none;
+  border-radius: var(--border-radius); /* Uses your 14px variable */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neon); /* Replaced #00ffff with theme var */
+  font-size: 26px;
+  box-shadow: var(--neon-glow), 0 0 4px var(--neon); /* Theme-consistent glow */
+  z-index: 999;
+  cursor: pointer;
+  transition: var(--transition); /* Uses your theme's transition */
+}
+
+.floating-search-btn:hover {
+  box-shadow: 0 0 18px var(--neon), 0 0 6px var(--neon);
+  transform: translateY(-2px); /* Matches other button hovers */
+}
 
 /* ===== MANGA GRID ===== */
 .results-grid, .manga-grid {
