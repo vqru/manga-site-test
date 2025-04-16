@@ -5,21 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manga Viewer</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Added font import -->
+  <!-- Font imports -->
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <!-- Font Awesome for search icon -->
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
   <div class="container">
-    <!-- Removed title but kept search -->
-    <header>
-      <div class="search-container">
-        <input type="text" id="search" placeholder="Search manga...">
-        <button id="search-btn">Search</button>
-      </div>
-    </header>
+    <!-- Empty header (if needed for layout structure) -->
+    <header></header>
+
+    <!-- Floating search button -->
+    <button id="search-icon-btn" class="floating-search-btn">
+      <i class="fas fa-search"></i>
+    </button>
+
+    <!-- Hidden search modal -->
+    <div id="search-modal" class="search-modal hidden">
+      <input type="text" id="search-input" placeholder="Search manga...">
+    </div>
 
     <main>
-      <!-- Original scroll sections unchanged -->
       <section class="manga-row">
         <h2>Most Popular</h2>
         <div class="scroll-container" id="popular-list"></div>
@@ -46,7 +52,7 @@
     </footer>
   </div>
 
-  <!-- Added manga SFX elements -->
+  <!-- Manga SFX elements -->
   <div class="manga-sfx" style="top:15%;left:5%">ゴゴゴ</div>
   <div class="manga-sfx" style="bottom:20%;right:5%">ドン</div>
   <div class="manga-sfx" style="top:50%;left:70%">ザワ</div>
