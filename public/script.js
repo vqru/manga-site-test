@@ -53,6 +53,8 @@ window.addEventListener('DOMContentLoaded', () => {
     console.error('Initialization error:', error);
     showError(`Failed to initialize page: ${error.message}`);
   }
+  document.getElementById('search-btn').addEventListener('click', () => {
+  document.getElementById('search-modal').classList.toggle('hidden');
 });
 
 // ---- HOMEPAGE SECTION LOGIC ----
