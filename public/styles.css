@@ -108,6 +108,37 @@ header h1 {
   outline: 2px solid var(--neon);
   box-shadow: var(--neon-glow);
 }
+/* ===== SEARCH MODAL ===== */
+.search-modal {
+  position: fixed;
+  top: 25%;
+  left: 10%;
+  right: 10%;
+  background: var(--glass); /* Uses your theme's glass effect */
+  padding: 20px;
+  border-radius: var(--border-radius); /* 14px from your vars */
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  box-shadow: 0 0 16px var(--neon); /* Neon glow */
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+  border: 1px solid var(--glass-border); /* Adds subtle border */
+}
+
+.search-modal input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--text); /* Uses your theme's white */
+  font-size: 18px;
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 1px;
+  outline: none;
+  box-shadow: 0 0 10px var(--neon) inset; /* Inner glow */
+}
 
 /* ===== BUTTONS (Standardized) ===== */
 button, .read-btn, .md-btn, #search-btn, .page-btn, .back-btn, .chapter-btn {
