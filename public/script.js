@@ -374,22 +374,62 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ===== MINIMAL SEARCH FUNCTIONALITY =====
+// ===== SEARCH FUNCTIONALITY =====
 document.addEventListener('DOMContentLoaded', () => {
   const searchBtn = document.getElementById('search-icon-btn');
   const searchModal = document.getElementById('search-modal');
+  const searchInput = document.getElementById('search-input');
   
-  if (searchBtn && searchModal) {
-    searchBtn.addEventListener('click', () => {
-      searchModal.classList.toggle('hidden');
-    });
-    
-    document.addEventListener('click', (e) => {
-      if (!searchModal.classList.contains('hidden') && 
-          !e.target.closest('#search-modal') && 
-          !e.target.closest('#search-icon-btn')) {
+  if (!searchBtn || !searchModal || !searchInput) return;
+
+  // Toggle modal visibility
+  searchBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    searchModal.classList.toggle('hidden');
+    if (!searchModal.classList.contains('hidden')) {
+      searchInput.focus();
+    }
+  });
+
+  // Close modal when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!searchModal.classList.contains('hidden') && 
+        !e.target.closest('#search-modal') && 
+        !e.target.closest('#search-icon-btn')) {
+      searchModal.classList.add('hidden');
+    }
+  });
+
+  // Handle search when pressing Enter
+  searchInput.addEventListener('keydown', async (e) => {
+    if (e.key === 'Enter') {
+      const query = searchInput.value.trim();
+      if (query.length < 2) return;
+      
+      try {
+        // Call your existing API endpoint
+        const response = await fetch(`${API_BASE}/fetchMangaList?title=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        // Clear existing results
+        elements.results.innerHTML = '';
+        
+        // Display search results using your existing createMangaCard function
+        if (data.data && Array.isArray(data.data)) {
+          data.data.forEach(manga => {
+            elements.results.appendChild(createMangaCard(manga));
+          });
+        } else {
+          elements.results.innerHTML = '<div class="no-results">No manga found</div>';
+        }
+        
+        // Hide the search modal
         searchModal.classList.add('hidden');
+        
+      } catch (error) {
+        console.error('Search failed:', error);
+        elements.results.innerHTML = '<div class="error-message">Search failed</div>';
       }
-    });
-  }
+    }
+  });
 });
