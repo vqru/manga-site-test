@@ -5,36 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manga Viewer</title>
   <link rel="stylesheet" href="styles.css">
-  <!-- Font imports -->
+  <!-- Added font import -->
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
   <div class="container">
-    <!-- Empty header (if needed for layout structure) -->
-    <header></header>
-
-    <!-- Floating search button -->
-    <button id="search-icon-btn" class="floating-search-btn" aria-label="Search manga">
-      <i class="fas fa-search"></i>
-    </button>
-
-    <!-- Enhanced search modal -->
-    <div id="search-modal" class="search-modal hidden">
-      <div class="search-modal-content">
-        <input type="text" 
-               id="search-input" 
-               placeholder="Search manga..." 
-               autocomplete="off"
-               aria-label="Search input">
-        <div id="search-results" class="search-results">
-          <!-- Results will appear here dynamically -->
-        </div>
+    <!-- Removed title but kept search -->
+    <header>
+      <div class="search-container">
+        <input type="text" id="search" placeholder="Search manga...">
+        <button id="search-btn">Search</button>
       </div>
-    </div>
+    </header>
 
     <main>
+      <!-- Original scroll sections unchanged -->
       <section class="manga-row">
         <h2>Most Popular</h2>
         <div class="scroll-container" id="popular-list"></div>
@@ -57,11 +42,11 @@
     </main>
 
     <footer>
-      <p>Data provided by <a href="https://mangadex.org" target="_blank" rel="noopener">MangaDex API</a>.</p>
+      <p>Data provided by <a href="https://mangadex.org" target="_blank">MangaDex API</a>.</p>
     </footer>
   </div>
 
-  <!-- Manga SFX elements -->
+  <!-- Added manga SFX elements -->
   <div class="manga-sfx" style="top:15%;left:5%">ゴゴゴ</div>
   <div class="manga-sfx" style="bottom:20%;right:5%">ドン</div>
   <div class="manga-sfx" style="top:50%;left:70%">ザワ</div>
