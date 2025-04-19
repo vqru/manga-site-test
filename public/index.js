@@ -1,44 +1,34 @@
-// index.js - fixed version
-
+// ===== CONFIG =====
 const API_BASE = '/.netlify/functions';
 let currentPage = 1;
 let currentSearch = '';
 
+// ===== DOM ELEMENTS =====
 const elements = {
   search: document.getElementById('search'),
   searchBtn: document.getElementById('search-btn'),
   results: document.getElementById('results'),
   pagination: document.getElementById('pagination'),
-  mangaList: document.getElementById('manga-list'),
-  mangaDetails: document.getElementById('manga-details'),
-  mangaCover: document.getElementById('manga-cover'),
-  mangaTitle: document.getElementById('manga-title'),
-  mangaAuthors: document.getElementById('manga-authors'),
-  mangaStatus: document.getElementById('manga-status'),
-  mangaDemographic: document.getElementById('manga-demographic'),
-  mangaDescription: document.getElementById('manga-description'),
-  chaptersList: document.getElementById('chapters-list'),
-  backToSearch: document.getElementById('back-to-search')
+  popularList: document.getElementById('popular-list'),
+  recentList: document.getElementById('recent-list'),
+  topratedList: document.getElementById('toprated-list')
 };
 
-const urlParams = new URLSearchParams(window.location.search);
-const mangaId = urlParams.get('manga');
-
+// ===== INITIALIZATION =====
 window.addEventListener('DOMContentLoaded', async () => {
-  try {
-    setupEventListeners();
+  // Load scroll sections
+  loadSection('popular-list', 'followedCount');
+  loadSection('recent-list', 'latestUploadedChapter');
+  loadSection('toprated-list', 'rating');
 
-    if (mangaId) {
-      await loadMangaDetails(mangaId);
-    } else {
-      await searchManga('popular');
-    }
-  } catch (error) {
-    console.error('Initialization error:', error);
-    showError(`Failed to initialize page: ${error.message}`);
-  }
+  // Setup search
+  setupEventListeners();
+  
+  // Default load popular manga
+  await searchManga('popular'); 
 });
 
+// ===== SEARCH FUNCTIONS =====
 function setupEventListeners() {
   elements.searchBtn.addEventListener('click', async () => {
     const query = elements.search.value.trim();
@@ -51,73 +41,80 @@ function setupEventListeners() {
       if (query) await searchManga(query);
     }
   });
-
-  elements.backToSearch.addEventListener('click', (e) => {
-    e.preventDefault();
-    showMangaList();
-    const url = new URL(window.location.href);
-    url.searchParams.delete('manga');
-    window.history.pushState({}, '', url);
-  });
 }
 
 async function searchManga(query, page = 1) {
   try {
     currentSearch = query;
     currentPage = page;
-    elements.results.innerHTML = '<div class="loading">Loading results...</div>';
+    elements.results.innerHTML = '<div class="loading">Loading...</div>';
 
     const response = await fetch(`${API_BASE}/fetchMangaList?query=${encodeURIComponent(query)}&page=${page}`);
-    if (!response.ok) throw new Error(`Search request failed with status ${response.status}`);
     const data = await response.json();
-    if (data.error) throw new Error(data.error);
-
     displaySearchResults(data);
-    showMangaList();
-
-    const url = new URL(window.location.href);
-    url.searchParams.delete('manga');
-    window.history.pushState({}, '', url);
   } catch (error) {
-    console.error('Search error:', error);
+    console.error('Search failed:', error);
     elements.results.innerHTML = `<div class="error-message">Search failed: ${error.message}</div>`;
   }
 }
 
 function displaySearchResults(data) {
-  if (!data.data || data.data.length === 0) {
-    elements.results.innerHTML = '<div class="no-results">No manga found.</div>';
-    elements.pagination.innerHTML = '';
+  if (!data.data?.length) {
+    elements.results.innerHTML = '<div class="no-results">No manga found</div>';
     return;
   }
 
-  const mangaCards = data.data.map(manga => {
-    const title = manga.attributes.title.en || Object.values(manga.attributes.title)[0] || 'Unknown Title';
-    const actualCoverUrl = manga.coverUrl || 'placeholder.jpg';
-    const proxiedCoverUrl = `/.netlify/functions/proxyImage?url=${encodeURIComponent(actualCoverUrl)}`;
-
-    return `
-      <div class="manga-card" data-id="${manga.id}">
-        <div class="manga-cover">
-          <img src="${proxiedCoverUrl}" alt="${title}" onerror="this.src='placeholder.jpg'">
-        </div>
-        <div class="manga-title">${title}</div>
+  elements.results.innerHTML = data.data.map(manga => `
+    <div class="manga-card" data-id="${manga.id}">
+      <div class="manga-cover">
+        <img src="/.netlify/functions/proxyImage?url=${encodeURIComponent(manga.coverUrl || '')}" 
+             alt="${manga.attributes.title.en}" 
+             onerror="this.src='placeholder.jpg'">
       </div>
-    `;
-  }).join('');
+      <div class="manga-title">${manga.attributes.title.en || 'Untitled'}</div>
+    </div>
+  `).join('');
 
-  elements.results.innerHTML = mangaCards;
-
+  // Add click handlers
   document.querySelectorAll('.manga-card').forEach(card => {
     card.addEventListener('click', () => {
-      const id = card.dataset.id;
-      window.location.href = `details.html?manga=${id}`;
+      window.location.href = `details.html?manga=${card.dataset.id}`;
     });
   });
 
-  const totalPages = Math.ceil(data.total / 20);
-  setupPagination(totalPages);
+  setupPagination(data.total);
 }
+
+// ===== SCROLL SECTIONS =====
+async function loadSection(containerId, sortKey) {
+  try {
+    const container = document.getElementById(containerId);
+    const res = await fetch(`${API_BASE}/fetchMangaList?sort=${sortKey}&limit=10`);
+    const data = await res.json();
+
+    container.innerHTML = data.data.map(manga => `
+      <div class="manga-card" data-id="${manga.id}">
+        <div class="cover-wrap">
+          <img src="/.netlify/functions/proxyImage?url=${encodeURIComponent(manga.coverUrl || '')}" 
+               loading="lazy" 
+               onerror="this.src='placeholder.jpg'">
+        </div>
+        <p class="title">${manga.attributes.title.en || 'Untitled'}</p>
+      </div>
+    `).join('');
+
+    // Add click handlers
+    container.querySelectorAll('.manga-card').forEach(card => {
+      card.addEventListener('click', () => {
+        window.location.href = `details.html?manga=${card.dataset.id}`;
+      });
+    });
+  } catch (error) {
+    console.error(`Failed to load ${containerId}:`, error);
+  }
+}
+
+// ===== PAGINATION =====
 
 function setupPagination(totalPages) {
   if (totalPages <= 1) {
