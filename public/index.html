@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manga Viewer</title>
   <link rel="stylesheet" href="styles.css">
+  <!-- Added font import -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="container">
+    <!-- Removed title but kept search -->
     <header>
-      <h1>Manga Viewer</h1>
       <div class="search-container">
         <input type="text" id="search" placeholder="Search manga...">
         <button id="search-btn">Search</button>
@@ -17,7 +19,7 @@
     </header>
 
     <main>
-      <!-- Scroll Sections -->
+      <!-- Original scroll sections unchanged -->
       <section class="manga-row">
         <h2>Most Popular</h2>
         <div class="scroll-container" id="popular-list"></div>
@@ -43,6 +45,11 @@
       <p>Data provided by <a href="https://mangadex.org" target="_blank">MangaDex API</a>.</p>
     </footer>
   </div>
+
+  <!-- Added manga SFX elements -->
+  <div class="manga-sfx" style="top:15%;left:5%">ゴゴゴ</div>
+  <div class="manga-sfx" style="bottom:20%;right:5%">ドン</div>
+  <div class="manga-sfx" style="top:50%;left:70%">ザワ</div>
 
   <script src="script.js"></script>
 </body>
