@@ -373,3 +373,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+/****************************
+ * SEARCH TOGGLE FUNCTIONALITY
+ ****************************/
+document.addEventListener('DOMContentLoaded', function() {
+  const searchToggle = document.getElementById('search-toggle');
+  const searchBox = document.querySelector('.search-box');
+  
+  if (searchToggle && searchBox) {
+    // Toggle visibility on icon click
+    searchToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      searchBox.classList.toggle('hidden');
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', () => {
+      searchBox.classList.add('hidden');
+    });
+
+    // Prevent closing when clicking inside search box
+    searchBox.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  }
+});
