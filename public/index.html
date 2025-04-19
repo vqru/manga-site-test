@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manga Viewer</title>
-  <link rel="stylesheet" href="styles.css">
-  <!-- Added font import -->
+  <title>Cosmic Manga</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
-    <!-- Removed title but kept search -->
     <header>
+      <h1>COSMIC MANGA</h1>
       <div class="search-container">
         <input type="text" id="search" placeholder="Search manga...">
         <button id="search-btn">Search</button>
@@ -19,7 +18,13 @@
     </header>
 
     <main>
-      <!-- Original scroll sections unchanged -->
+      <!-- Search Results -->
+      <div id="manga-list">
+        <div id="results" class="results-grid"></div>
+        <div id="pagination" class="pagination"></div>
+      </div>
+
+      <!-- Horizontal Scroll Sections -->
       <section class="manga-row">
         <h2>Most Popular</h2>
         <div class="scroll-container" id="popular-list"></div>
@@ -34,23 +39,17 @@
         <h2>Top Rated</h2>
         <div class="scroll-container" id="toprated-list"></div>
       </section>
-
-      <section class="manga-row">
-        <h2>New Releases</h2>
-        <div class="scroll-container" id="new-list"></div>
-      </section>
     </main>
 
     <footer>
-      <p>Data provided by <a href="https://mangadex.org" target="_blank">MangaDex API</a>.</p>
+      <p>Data provided by <a href="https://mangadex.org" target="_blank">MangaDex API</a></p>
     </footer>
   </div>
 
-  <!-- Added manga SFX elements -->
+  <!-- Manga SFX Elements -->
   <div class="manga-sfx" style="top:15%;left:5%">ゴゴゴ</div>
   <div class="manga-sfx" style="bottom:20%;right:5%">ドン</div>
-  <div class="manga-sfx" style="top:50%;left:70%">ザワ</div>
 
-  <script src="script.js"></script>
+  <script src="index.js"></script> <!-- Only index.js for homepage -->
 </body>
 </html>
